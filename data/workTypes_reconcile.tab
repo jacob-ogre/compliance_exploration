@@ -1,0 +1,449 @@
+Work_type	JM_expect	TK_expect	reconcile
+** other **	NA	0	NA
+agriculture	0.5	0.5	5
+agriculture - concentrated animal feeding operation - cattle	1	1	1
+agriculture - concentrated animal feeding operation - hogs	1	1	1
+agriculture - concentrated animal feeding operation - other	1	1	1
+agriculture - concentrated animal feeding operation - poultry	1	1	1
+agriculture - concentrated animal feeding operation - sheep	1	1	1
+agriculture - concentrated animal feeding operation (cafo)	1	1	1
+agriculture - crop maintenance	0.5	0	0.5
+agriculture - crop planting	1	0.5	0.5
+agriculture - crop production	1	1	1
+agriculture - grazing - ongoing activities	0	0	0
+agriculture - grazing - ongoing activities - cattle	0	0	0
+agriculture - grazing - ongoing activities - hay	0.5	0	0.5
+agriculture - grazing - ongoing activities - horses	0	0	0
+agriculture - grazing - ongoing activities - other	0	0	0
+agriculture - grazing - ongoing activities - sheep	0	0	0
+agriculture - grazing - permit renewal	0	0	0
+agriculture - grazing - permit renewal - cattle	0	0	0
+agriculture - grazing - permit renewal - horses	0	0	0
+agriculture - grazing - permit renewal - sheep	0	0	0
+agriculture - irrigation	0.5	0.5	0.5
+agriculture - irrigation - ditch/canal - abandonment	1	0	0.5
+agriculture - irrigation - ditch/canal - maintenance / modification / replacement / upgrade	0.5	0.5	0.5
+agriculture - irrigation - ditch/canal - new construction	1	1	1
+agriculture - irrigation - intake - abandonment	0	0	0
+agriculture - irrigation - intake - maintenance / modification / replacement / upgrade	0	NA	0
+agriculture - irrigation - intake - new construction	0	NA	0
+agriculture - irrigation - reservoir - maintenance / modification / replacement / upgrade	0.5	0.5	0.5
+agriculture - irrigation - reservoir - new construction	1	1	1
+agriculture - other	NA	0	NA
+agriculture - pesticide use	NA	0	0
+agriculture - weed control / vegetation management	0.5	NA	0.5
+animal control	0	0	0
+aquaculture	NA	1	1
+biological control	0	0	0
+bridge - maintenance / modification / replacement / upgrade - federal	0.5	0	0.5
+bridge - maintenance / modification / replacement / upgrade - non federal	0.5	0	0.5
+bridge - new construction - federal	1	1	1
+bridge - new construction - non federal	1	1	1
+bridge - replacement	0.5	0	0.5
+bridge construction / maintenance	0.5	0.5	0.5
+communications tower	1	0.5	0.5
+communications tower - co-location	0	NA	0
+communications tower - maintenance / modification / replacement / upgrade	0	0	0
+communications tower - new construction	1	1	1
+dam	0.5	0.5	0.5
+dam - maintenance / modification / replacement / upgrade - federal	0.5	0	0.5
+dam - maintenance / modification / replacement / upgrade - non federal	0.5	0	0.5
+dam - new construction - federal	1	1	1
+dam - new construction - non federal	1	1	1
+dam - operations - federal	0	NA	0
+dam - operations - non federal	0	NA	0
+dam - removal - federal	1	1	1
+dam - removal - non federal	1	1	1
+department of energy operations	0	NA	0
+development	0.5	1	1
+development - commercial	1	1	1
+development - government / military	1	1	1
+development - government / municipal	1	1	1
+development - residential	1	1	1
+development - tribal	1	NA	1
+dredge / excavation	0.5	0	0.5
+dredge / excavation - backwaters	0	0	0
+dredge / excavation - borrow pit	0.5	0	0.5
+dredge / excavation - disposal	0	0	0
+dredge / excavation - disposal - beneficial use	0	0	0
+dredge / excavation - gravel / sand	0.5	0	0.5
+dredge / excavation - other	NA	0	NA
+energy - solar	1	1	1
+federal grant / loan related	0	NA	0
+fill	0.5	0.5	0.5
+fill - floodplain	1	0.5	0.5
+fill - intertidal / subtidal	0	0	0
+fill - lake / reservoir	0.5	1	0.5
+fill - stream	0.5	1	1
+fill - wetland	0.5	0.5	0.5
+fire	1	0.5	0.5
+fire - burned area emergency rehabilitation (baer)	1	1	1
+fire - control / suppression	1	NA	1
+fire - prescribed burn	1	1	1
+fire - wildland fire use	1	NA	1
+forestry	0.5	0.5	0.5
+forestry - clearing	1	1	1
+forestry - harvest	1	1	1
+forestry - other	NA	NA	NA
+forestry - pesticide use	0	0	0
+forestry - planting / silviculture	0.5	0.5	0.5
+forestry - timber sale	0	NA	0.5
+forestry - weed control / vegetation management	0	0	0
+forestry - wildland urban interface (wui)	0.5	NA	0.5
+guidance	NA	0	0
+invasive animal control	0	0	0
+invasive plant control	0	0.5	0.5
+invasive species control	0	0.5	0.5
+land - acquisition	0	0	0
+land - clearing	1	1	1
+land - creation	1	0.5	0.5
+land - disposal / transfer	0	0	0
+land - drainage	NA	0.5	NA
+land - easement / right-of-way	0	0	0
+land - flooding	0	1	0.5
+land - management plans	0	0	0
+land - preservation	0	1	0.5
+land - restoration / enhancement	0.5	0.5	0.5
+land acquisition - agricultural	0	0	0
+land acquisition - forest	0	0	0
+land acquisition - grassland	0	0	0
+land acquisition - other	0	0	0
+land acquisition - upland	0	0	0
+land acquisition - wetland	0	0	0
+land clearing - agricultural	1	1	1
+land clearing - forest	1	1	1
+land clearing - grassland	1	1	1
+land clearing - other	1	1	1
+land clearing - upland	1	1	1
+land clearing - wetland	1	1	1
+land creation - forest	1	1	1
+land creation - grassland	0.5	1	0.5
+land creation - other	0.5	0	NA
+land creation - upland	1	NA	0.5
+land creation - wetland	1	0.5	0.5
+land disposal / transfer - agricultural	0	0	0
+land disposal / transfer - forest	0	0	0
+land disposal / transfer - grassland	0	0	0
+land disposal / transfer - other	0	0	0
+land disposal / transfer - upland	0	0	0
+land disposal / transfer - wetland	0	0	0
+land drainage - agricultural	NA	0	0
+land drainage - forest	NA	0	0
+land drainage - other	NA	0	0
+land drainage - upland	NA	0.5	0.5
+land drainage - wetland	NA	0.5	0.5
+land easement / right-of-way - agricultural	0	0	0
+land easement / right-of-way - forest	0	0	0
+land easement / right-of-way - other	0	0	0
+land easement / right-of-way - upland	0	0	0
+land easement / right-of-way - wetland	0	0	0
+land flooding - agricultural	NA	0.5	0.5
+land flooding - forest	NA	0	0.5
+land flooding - grassland	NA	0.5	0.5
+land flooding - other	NA	0.5	0.5
+land flooding - upland	NA	0.5	0.5
+land flooding - wetland	NA	0.5	0.5
+land management plans - agricultural	0	0	0
+land management plans - forest	0	0	0
+land management plans - grassland	0	0	0
+land management plans - national wildlife refuge	0	0	0
+land management plans - other	0	0	0
+land management plans - upland	0	0	0
+land management plans - watershed	0	0	0
+land management plans - wetland	0	0	0
+land preservation - agricultural	0	1	0
+land preservation - forest	0	1	0
+land preservation - grassland	0	1	0
+land preservation - other	0	NA	0
+land preservation - upland	0	1	0
+land preservation - wetland	0	1	0
+land restoration / enhancement - agricultural	0.5	0.5	0.5
+land restoration / enhancement - forest	0.5	0.5	0.5
+land restoration / enhancement - grassland	0.5	0.5	0.5
+land restoration / enhancement - other	0.5	NA	NA
+land restoration / enhancement - upland	0.5	0.5	0.5
+land restoration / enhancement - wetland	0.5	0.5	0.5
+landfill	1	1	1
+large boat ramp - abandonment	1	0	0
+large boat ramp - maintenance / modification / replacement / upgrade	0.5	0	0.5
+large boat ramp - new construction	1	1	1
+large boathouse / boatlift - abandonment	1	0	0
+large boathouse / boatlift - maintenance / modification / replacement / upgrade	0.5	0	0.5
+large boathouse / boatlift - new construction	1	1	1
+large dock / pier - abandonment	1	0	0
+large dock / pier - maintenance / modification / replacement / upgrade	0.5	0	0.5
+large dock / pier - new construction	1	1	1
+large marina / port - maintenance / modification / replacement / upgrade	0.5	0	0.5
+large marina / port - new construction	1	1	1
+large mooring piles - abandonment	0.5	0	0.5
+large mooring piles - maintenance / modification / replacement / upgrade	0.5	0	0.5
+large mooring piles - new construction	1	0	1
+levee / dike - abandonment	0.5	0	0.5
+levee / dike - maintenance / modification / replacement / upgrade	0.5	0	0.5
+levee / dike - new construction	1	0	1
+levees / dikes	0.5	0	0.5
+military - maneuvers	0	0	0
+military - operations	0	NA	0
+military - unexploded ordnance removal	0	NA	0
+military operations / maneuvers	0	NA	0
+mining	0.5	0.5	0.5
+mining - subsurface	0	NA	0.5
+mining - subsurface extraction - coal	0	NA	0.5
+mining - subsurface extraction - non energy minerals / materials	0	NA	0.5
+mining - subsurface extraction - other energy minerals	0	NA	0.5
+mining - subsurface leasing - coal	0	0	0
+mining - subsurface leasing - other energy minerals	0	0	0
+mining - subsurface pre-recovery exploration - coal	0	NA	0.5
+mining - subsurface pre-recovery exploration - non energy minerals / materials	0	NA	0.5
+mining - subsurface pre-recovery exploration - other energy minerals	0	NA	0.5
+mining - subsurface reclamation - coal	0	NA	0.5
+mining - subsurface reclamation - non energy minerals / materials	0	NA	0.5
+mining - subsurface reclamation - other energy minerals	0	NA	0.5
+mining - surface	0.5	0.5	0.5
+mining - surface extraction - coal	0.5	1	1
+mining - surface extraction - non energy minerals / materials	0.5	1	1
+mining - surface extraction - other energy minerals	0.5	1	1
+mining - surface leasing - coal	0	0	0
+mining - surface leasing - other energy minerals	0	0	0
+mining - surface pre-recovery exploration - coal	0.5	1	1
+mining - surface pre-recovery exploration - non energy minerals / materials	0.5	1	1
+mining - surface pre-recovery exploration - other energy minerals	0.5	1	1
+mining - surface reclamation - coal	0.5	1	1
+mining - surface reclamation - non energy minerals / materials	0.5	1	1
+mining - surface reclamation - other energy minerals	0.5	1	1
+oil or gas	0.5	0.5	0.5
+oil or gas - exploration / production - offshore	0.5	0	0.5
+oil or gas - exploration / production - onshore	0.5	0.5	0.5
+oil or gas - exploration / production - onshore - hydraulic fracking methodology	0.5	0.5	0.5
+oil or gas - leasing	0	0	0
+oil or gas - pipeline - offshore - abandonment	0.5	0	0.5
+oil or gas - pipeline - offshore - maintenance / modification / replacement / upgrade	0.5	0	0.5
+oil or gas - pipeline - offshore - new construction	0	0	0
+oil or gas - pipeline - onshore - abandonment - above ground	0.5	0	0.5
+oil or gas - pipeline - onshore - abandonment - below ground	0	0	0
+oil or gas - pipeline - onshore - maintenance / modification / replacement / upgrade - above ground	0.5	0	0.5
+oil or gas - pipeline - onshore - maintenance / modification / replacement / upgrade - below ground	0	0	0
+oil or gas - pipeline - onshore - new construction - above ground	0.5	0.5	0.5
+oil or gas - pipeline - onshore - new construction - below ground	0.5	0	0.5
+oil or gas exploration / production	0.5	0.5	0.5
+oil or gas pipeline	0.5	0.5	0.5
+power generation	0.5	0.5	0.5
+power generation - coal	0.5	1	0.5
+power generation - geothermal	0.5	1	0.5
+power generation - hydropower	0.5	0.5	0.5
+power generation - hydropower - new license	0	0.5	0
+power generation - hydropower - new license - ferc	0	0.5	0
+power generation - hydropower - other	0	NA	0
+power generation - hydropower - other - ferc	0	NA	0
+power generation - hydropower - post license	0	NA	0
+power generation - hydropower - post license - ferc	0	NA	0
+power generation - hydropower - preliminary permit	0	NA	0
+power generation - hydropower - preliminary permit - ferc	0	NA	0
+power generation - hydropower - relicense	0	0	0
+power generation - hydropower - relicense - ferc	0	0	0
+power generation - natural gas	0.5	1	0.5
+power generation - nuclear	0.5	1	0.5
+power generation - other	0.5	0.5	0.5
+power generation - solar	0.5	1	0.5
+power generation - tidal power	0.5	NA	0.5
+power generation - wave power	0.5	NA	0.5
+power generation - wind	0.5	1	0.5
+power generation - wind - offshore	0.5	1	0.5
+power generation - wind - onshore	0.5	1	0.5
+private boat ramp - abandonment	1	0	0.5
+private boat ramp - maintenance / modification / replacement / upgrade	0.5	0	0.5
+private boat ramp - new construction	1	1	1
+private boathouse / boatlift - abandonment	1	0	0.5
+private boathouse / boatlift - maintenance / modification / replacement / upgrade	0.5	0	0.5
+private boathouse / boatlift - new construction	1	1	1
+private dock / pier	1	0.5	0.5
+private dock / pier - abandonment	1	0	0.5
+private dock / pier - maintenance / modification / replacement / upgrade	0.5	0	0.5
+private dock / pier - new construction	1	1	1
+private mooring piles - abandonment	0.5	0	0.5
+private mooring piles - maintenance / modification / replacement / upgrade	0.5	0	0.5
+private mooring piles - new construction	0.5	0	0.5
+recovery permit	0	0	0
+recovery permit - non-research - other	0	0	0
+recovery permit - non-research - salvage/handling	0	0	0
+recovery permit - research - collection/handling	0	0	0
+recovery permit - research - other	0	0	0
+recreation - maintenance / modification / replacement / upgrade	0.5	0	0.5
+recreation - new construction	1	0.5	0.5
+recreation construction / maintenance	0.5	0.5	0.5
+refining	0.5	1	1
+refining - ethanol	0.5	1	1
+refining - oil	0.5	1	1
+refining - other - energy	0.5	1	1
+regulation promulgation	0	NA	0
+remote video surveillance	0	0	0
+shoreline / beach protection - breakwaters	0.5	0.5	0.5
+shoreline / beach protection - breakwaters - maintenance / modification / replacement / upgrade	0.5	0	0.5
+shoreline / beach protection - breakwaters - new construction	1	1	1
+shoreline / beach protection - bulkhead	0.5	0.5	0.5
+shoreline / beach protection - bulkhead - maintenance / modification / replacement / upgrade	0.5	0	0.5
+shoreline / beach protection - bulkhead - new construction	1	0.5	1
+shoreline / beach protection - bulkhead - removal	1	0.5	0.5
+shoreline / beach protection - debris removal	0.5	0	0.5
+shoreline / beach protection - groins	0.5	0.5	0.5
+shoreline / beach protection - groins - maintenance / modification / replacement / upgrade	0.5	0	0.5
+shoreline / beach protection - groins - new construction	1	1	1
+shoreline / beach protection - other	NA	NA	NA
+shoreline / beach protection - renourishment	0.5	0.5	0.5
+shoreline / beach protection - rip-rap	0.5	0.5	0.5
+shoreline / beach protection - rip-rap - maintenance / modification / replacement / upgrade	0.5	0	0.5
+shoreline / beach protection - rip-rap - new construction	1	1	1
+shoreline / beach protection - rip-rap - removal	1	1	1
+shoreline / beach protection / renourishment	0.5	0.5	0.5
+shoreline development - large scale	1	1	1
+shoreline development - private / small scale	1	0.5	0.5
+shoreline usage facilities / development	1	1	1
+special use permit	0	0	0
+special use permit - recreation event / activities	0	0	0
+special use permit - research	0	0	0
+spill / release	0.5	0.5	0.5
+spill / release - chemical	0.5	NA	0.5
+spill / release - chemical - cleanup operations	0.5	NA	0.5
+spill / release - oil	0.5	0.5	0.5
+spill / release - oil - cleanup operations	0.5	NA	0.5
+spill / release - other	0.5	NA	0.5
+spill / release - other - cleanup operations	0.5	NA	0.5
+stream / waterbody - channel / diversion structures	0.5	0.5	0.5
+stream / waterbody - channel / diversion structures - maintenance / modification / replacement / upgrade	0.5	0	0.5
+stream / waterbody - channel / diversion structures - new construction	0.5	1	0.5
+stream / waterbody - channel / diversion structures - screening	0	NA	0
+stream / waterbody - modification	0.5	0.5	0.5
+stream / waterbody - modification - bank protection - bio-engineering	0.5	NA	NA
+stream / waterbody - modification - bank stabilization / armoring	0.5	0.5	0.5
+stream / waterbody - modification - channelization - maintenance / modification / replacement / upgrade	0.5	0	0.5
+stream / waterbody - modification - channelization - new construction	0.5	1	1
+stream / waterbody - modification - concrete lining	1	0	1
+stream / waterbody - modification - culvert / pipe	0	0	0
+stream / waterbody - modification - dike filling	0	0	0
+stream / waterbody - modification - fish passage barrier construction	0.5	0.5	0.5
+stream / waterbody - modification - fish passage barrier destruction	0.5	0.5	0.5
+stream / waterbody - modification - grassed waterways	0	1	0.5
+stream / waterbody - modification - landfill / hollowfill	0.5	1	0.5
+stream / waterbody - modification - relocation	1	0	0.5
+stream / waterbody - modification - restoration / enhancement	0.5	0.5	0.5
+stream / waterbody - modification - snag and clear - flood control	0	NA	0
+stream / waterbody - modification - snag and clear - navigational	0	NA	0
+stream / waterbody - modification - spring development / redevelop	0.5	NA	0.5
+stream / waterbody / canals / levees / dikes	0.5	1	0.5
+stream acquisition	0	0	0
+stream creation	0.5	1	0.5
+stream drainage	0	1	0.5
+stream easement / right-of-way	0	0	0
+stream flooding / overfill	0.5	0.5	0.5
+stream preservation	0	1	0
+stream restoration / enhancement	0.5	0.5	0.5
+superfund site remediation	0.5	NA	0.5
+transmission line	0.5	0	0.5
+transmission line - electrical	0.5	0	0.5
+transmission line - electrical - abandonment - above ground	1	0	0.5
+transmission line - electrical - abandonment - below ground	0	0	0.5
+transmission line - electrical - maintenance / modification / replacement / upgrade - above ground	0.5	0	0.5
+transmission line - electrical - maintenance / modification / replacement / upgrade - below ground	0	0	0.5
+transmission line - electrical - new construction - above ground	0.5	0	0.5
+transmission line - electrical - new construction - below ground	0	0	0.5
+transmission line - other	0.5	0	0.5
+transmission line - other - abandonment - above ground	0.5	0	0.5
+transmission line - other - abandonment - below ground	0	0	0.5
+transmission line - other - maintenance / modification / replacement / upgrade - above ground	0.5	0	0.5
+transmission line - other - maintenance / modification / replacement / upgrade - below ground	0	0	0.5
+transmission line - other - new construction - above ground	0.5	0	0.5
+transmission line - other - new construction - below ground	0	0	0.5
+transmission line - telephone	0.5	0	0.5
+transmission line - telephone - abandonment - above ground	0.5	0	0.5
+transmission line - telephone - abandonment - below ground	0	0	0.5
+transmission line - telephone - maintenance / modification / replacement / upgrade - above ground	0.5	0	0.5
+transmission line - telephone - maintenance / modification / replacement / upgrade - below ground	0	0	0.5
+transmission line - telephone - new construction - above ground	0.5	0	0.5
+transmission line - telephone - new construction - below ground	0	0	0.5
+transport - airport - maintenance / modification / replacement / upgrade	0.5	0.5	0.5
+transport - airport - new construction	1	1	1
+transport - railroad - abandonment	0.5	0	0.5
+transport - railroad - maintenance / modification / replacement / upgrade	0.5	0.5	0.5
+transport - railroad - new construction	1	1	1
+transport - road / highway - abandonment - federal	0.5	0	0.5
+transport - road / highway - abandonment - non federal	0.5	0	0.5
+transport - road / highway - maintenance / modification / replacement / upgrade - federal	0.5	0.5	0.5
+transport - road / highway - maintenance / modification / replacement / upgrade - non federal	0.5	0.5	0.5
+transport - road / highway - new construction - federal	1	1	1
+transport - road / highway - new construction - non federal	1	1	1
+transport - shipping - inland waterway / navigation	0	0	0
+transportation	0.5	0.5	0.5
+transportation - airport	0.5	1	1
+transportation - other	0.5	0.5	0.5
+transportation - railroad	0.5	1	0.5
+transportation - road / highway	0.5	1	0.5
+transportation - shipping	0.5	0	0.5
+vegetation management	0.5	0.5	0.5
+vegetation management - fire	0.5	0.5	0.5
+vegetation management - fire - forest	1	0.5	0.5
+vegetation management - fire - grassland	0.5	0.5	0.5
+vegetation management - fire - invasive plant control	0.5	0.5	0.5
+vegetation management - fire - other	0.5	0.5	0.5
+vegetation management - fire - upland	1	0.5	0.5
+vegetation management - fire - wetland	0.5	0.5	0.5
+vegetation management - fire - wui	NA	0.5	0.5
+vegetation management - mechanical	0.5	0	0.5
+vegetation management - mechanical - agricultural	0.5	0	0.5
+vegetation management - mechanical - forest	1	0	0.5
+vegetation management - mechanical - grassland	0.5	0	0.5
+vegetation management - mechanical - invasive plant control	0.5	0	0.5
+vegetation management - mechanical - other	0.5	0	0.5
+vegetation management - mechanical - upland	1	0	0.5
+vegetation management - mechanical - wetland	0.5	0	0.5
+vegetation management - mechanical - wui	NA	0	0.5
+vegetation management - other	0.5	NA	NA
+vegetation management - other - agricultural	0.5	NA	NA
+vegetation management - other - forest	1	NA	NA
+vegetation management - other - grassland	0.5	NA	NA
+vegetation management - other - invasive plant control	0.5	NA	NA
+vegetation management - other - other	0.5	NA	NA
+vegetation management - other - upland	1	NA	NA
+vegetation management - other - wetland	0.5	NA	NA
+vegetation management - other - wui	NA	NA	NA
+vegetation management - pesticide / chemical	0.5	0	0.5
+vegetation management - pesticide / chemical - agricultural	0.5	0	0.5
+vegetation management - pesticide / chemical - forest	1	0	0.5
+vegetation management - pesticide / chemical - grassland	0.5	0	0.5
+vegetation management - pesticide / chemical - invasive plant control	0.5	0	0.5
+vegetation management - pesticide / chemical - other	0.5	0	0.5
+vegetation management - pesticide / chemical - upland	1	0	0.5
+vegetation management - pesticide / chemical - wetland	0.5	0	0.5
+wastewater facility	0.5	0.5	0.5
+wastewater facility - maintenance / modification / replacement / upgrade	0.5	0	0.5
+wastewater facility - new construction	1	1	1
+wastewater facility - plant operations	0	NA	0
+wastewater pipeline	0.5	0.5	0.5
+wastewater pipeline - maintenance / modification / replacement / upgrade - above ground	0.5	0	0.5
+wastewater pipeline - maintenance / modification / replacement / upgrade - below ground	0	0	0.5
+wastewater pipeline - new construction - above ground	1	0.5	1
+wastewater pipeline - new construction - below ground	0	0	0.5
+water quality modification	0	0	0
+water quality modification - stormwater discharge	0	0	0
+water quality modification - stormwater discharge with npdes permit	0	0	0
+water quality modification - wastewater discharge	0	0	0
+water supply / delivery	0.5		0.5
+water supply facility	0.5	0.5	0.5
+water supply facility - desalination plant operations	0	NA	0
+water supply facility - diversions	0.5	1	0.5
+water supply facility - maintenance / modification / replacement / upgrade	0.5	0	0.5
+water supply facility - new construction	1	1	1
+water supply facility - withdrawal - groundwater	0	NA	NA
+water supply facility - withdrawal - surface	0	NA	NA
+water supply pipeline	0.5	0.5	0.5
+water supply pipeline - maintenance / modification / replacement / upgrade - above ground	0.5	0.5	0.5
+water supply pipeline - maintenance / modification / replacement / upgrade - below ground	0	0	0
+water supply pipeline - new construction - above ground	0.5	0.5	0.5
+water supply pipeline - new construction - below ground	0	0	0
+water withdrawal / depletion	0	0	0
+waterbody acquisition	0	0	0
+waterbody creation	1	1	1
+waterbody drainage	0.5	1	0.5
+waterbody easement / right-of-way	0	0	0
+waterbody flooding / overfill	0	0.5	0.5
+waterbody preservation	0	1	0
+waterbody restoration / enhancement	0.5	0.5	0.5
