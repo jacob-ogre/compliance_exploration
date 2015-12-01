@@ -63,7 +63,7 @@ cons_workType <- tmp
 head(cons_workType)
 w_coord <- cons_workType[cons_workType$with_coord == TRUE, ]
 dim(w_coord)
-head(w_coord)
+dim(w_coord)
 
 newd <- merge(dat, cons_workType, by="Work_type")
 head(newd)
