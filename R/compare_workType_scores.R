@@ -117,6 +117,92 @@ write.table(final,
             quote=FALSE,
             row.names=FALSE)
 
+###################################################
+# Now let's get some samples from formal consults
+sorted <- final[order(-final$with_coord, -final$reconcile, -final$N_formal), ]
+head(sorted, 20)
+coord <- sorted[sorted$with_coord == TRUE, ]
+
+top10_vis <- coord$Work_type[1:10]
+top10_may <- coord[coord$reconcile == 0.5, ]$Work_type[1:10]
+top10_nov <- coord[coord$reconcile == 0, ]$Work_type[1:10]
+top10 <- c(top10_vis, top10_may, top10_nov)
+
+get_random <- function(x) {
+    sub <- formal[formal$work_type == x & 
+                  formal$with_coord == TRUE, ]
+    size <- ifelse(dim(sub)[1] > 30,
+                   round(0.1 * dim(sub)[1]),
+                   3)
+    samp <- sub[sample(rownames(sub), size=size), ]
+    return(samp)
+}
+
+samp_d <- data.frame()
+for (i in top10) {
+    cur <- get_random(i)
+    samp_d <- rbind(samp_d, cur)
+}
+dim(samp_d)
+head(samp_d)
+table(samp_d$state)
+table(samp_d$work_type)
+
+write_samp_d <- make_writeable(samp_d)
+
+base <- "~/Google Drive/Defenders/EndSpCons_shared/Compliance Exploration/"
+write.table(write_samp_d,
+            file=paste0(base, "random_sample_formal_consults.tab"),
+            sep="\t",
+            quote=FALSE,
+            row.names=FALSE)
+
+###################################################
+# Now let's get some samples from informal consults
+inform <- full[full$formal_consult == "No", ]
+
+sorted <- final[order(-final$with_coord, -final$reconcile, -final$N_consultations), ]
+head(sorted, 20)
+coord <- sorted[sorted$with_coord == TRUE, ]
+
+top10_vis <- coord$Work_type[1:10]
+top10_may <- coord[coord$reconcile == 0.5, ]$Work_type[1:10]
+top10_nov <- coord[coord$reconcile == 0, ]$Work_type[1:10]
+top10 <- c(top10_vis, top10_may, top10_nov)
+
+get_random <- function(x) {
+    sub <- inform[inform$work_type == x & 
+                  inform$with_coord == TRUE, ]
+    size <- ifelse(dim(sub)[1] > 30,
+                   round(0.05 * dim(sub)[1]),
+                   3)
+    samp <- sub[sample(rownames(sub), size=size), ]
+    return(samp)
+}
+
+samp_d <- data.frame()
+for (i in top10) {
+    cur <- get_random(i)
+    samp_d <- rbind(samp_d, cur)
+}
+dim(samp_d)
+head(samp_d)
+table(samp_d$state)
+table(samp_d$work_type)
+
+write_samp_d <- make_writeable(samp_d)
+
+base <- "~/Google Drive/Defenders/EndSpCons_shared/Compliance Exploration/"
+write.table(write_samp_d,
+            file=paste0(base, "random_sample_informal_consults.tab"),
+            sep="\t",
+            quote=FALSE,
+            row.names=FALSE)
+
+
+
+
+
 
 
 
