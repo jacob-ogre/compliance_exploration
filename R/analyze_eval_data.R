@@ -86,6 +86,20 @@ names(inform_1)
 inform_dat <- left_join(inform_1, expect, by = c("work_type" = "Work_type"))
 names(inform_dat)[2] <- "action_found"
 
+# some type conversions for formal and informal
+form_dat$area <- as.numeric(form_dat$area)
+inform_dat$area <- as.numeric(inform_dat$area)
+form_dat$start_date <- mdy(form_dat$start_date)
+inform_dat$start_date <- mdy(inform_dat$start_date)
+form_dat$FWS_concl_date <- mdy(form_dat$FWS_concl_date)
+inform_dat$FWS_concl_date <- mdy(inform_dat$FWS_concl_date)
+
+# make a combined df
+names(inform_dat)[9] <- "completed"
+form_dat$formal_in <- rep("formal", length(form_dat$activity_code))
+inform_dat$formal_in <- rep("informal", length(inform_dat$activity_code))
+combo_dat <- rbind(form_dat, inform_dat)
+
 ###############################################################################
 # Let's do some plotting and analysis!
 
@@ -151,9 +165,6 @@ mean(form_dat$earliest_date, na.rm = T)
 median(form_dat$earliest_date, na.rm = T)
 summary(form_dat$earliest_date, na.rm = T)
 hist(form_dat$earliest_date, breaks = "years")
-
-names(inform_dat)[9] <- "completed"
-combo_dat <- rbind(form_dat, inform_dat)
 
 ggplot(combo_dat, aes(earliest_date)) +
     geom_histogram() +
@@ -241,5 +252,96 @@ plot_observability_vs_available <- function(dat) {
 
 plot_observability_vs_available(form_obs_dat)
 plot_observability_vs_available(inform_obs_dat)
+
+###########################################################################
+# Let's look for some other differences, if any
+check_area_disturbed <- function(dat) {
+    fdat <- dat[dat$formal_in == "formal", ]
+    idat <- dat[dat$formal_in == "informal", ]
+    formal_area_mean <- mean(fdat$area, na.rm = T)
+    informal_area_mean <- mean(idat$area, na.rm = T)
+    formal_area_median <- median(fdat$area, na.rm = T)
+    informal_area_median <- median(idat$area, na.rm = T)
+    formal_area_sd <- sd(fdat$area, na.rm = T)
+    informal_area_sd <- sd(idat$area, na.rm = T)
+    formal_area_n <- sum(!is.na(fdat$area))
+    informal_area_n <- sum(!is.na(idat$area))
+    formal_area_se <- formal_area_sd / sqrt(formal_area_n)
+    informal_area_se <- informal_area_sd / sqrt(informal_area_n)
+    formal_start_date_mean <- mean(fdat$start_date, na.rm = T)
+    informal_start_date_mean <- mean(idat$start_date, na.rm = T)
+    formal_start_date_sd <- sd(fdat$start_date, na.rm = T)
+    informal_start_date_sd <- sd(idat$start_date, na.rm = T)
+
+    formal_FWS_concl_date_mean <- mean(fdat$FWS_concl_date, na.rm = T)
+    informal_FWS_concl_date_mean <- mean(idat$FWS_concl_date, na.rm = T)
+    formal_FWS_concl_date_sd <- sd(fdat$FWS_concl_date, na.rm = T)
+    informal_FWS_concl_date_sd <- sd(idat$FWS_concl_date, na.rm = T)
+    formal_lat_mean <- mean(fdat$lat_dec_deg.x, na.rm = T)
+    informal_lat_mean <- mean(idat$lat_dec_deg.x, na.rm = T)
+    formal_lat_sd <- sd(fdat$lat_dec_deg.x, na.rm = T)
+    informal_lat_sd <- sd(idat$lat_dec_deg.x, na.rm = T)
+    formal_long_mean <- mean(fdat$long_dec_deg.x, na.rm = T)
+    informal_long_mean <- mean(idat$long_dec_deg.x, na.rm = T)
+    formal_long_sd <- sd(fdat$long_dec_deg.x, na.rm = T)
+    informal_long_sd <- sd(idat$long_dec_deg.x, na.rm = T)
+
+    variable <- c("area", "area", "area", "area", "area",
+                  "start date", "end date", 
+                  "latitude", "latitude",
+                  "longitude", "longitude")
+    stat <- c("mean", "sd", "median", "n", "se", 
+              "mean", "mean", rep(c("mean", "sd"), 2))
+    print(stat)
+    formal <- c(prettyNum(formal_area_mean, digits = 3),
+                prettyNum(formal_area_sd, digits = 3),
+                prettyNum(formal_area_median, digits = 3),
+                prettyNum(formal_area_n, digits = 3),
+                prettyNum(formal_area_se, digits = 3),
+                format(formal_start_date_mean, format = "%d %b %Y"),
+                # prettyNum(formal_start_date_sd, digits = 3),
+                format(formal_FWS_concl_date_mean, format = "%d %b %Y"),
+                # prettyNum(formal_FWS_concl_date_sd, digits = 3),
+                prettyNum(formal_lat_mean, digits = 3),
+                prettyNum(formal_lat_sd, digits = 3),
+                prettyNum(formal_long_mean, digits = 3),
+                prettyNum(formal_long_sd, digits = 3))
+
+    informal <- c(prettyNum(informal_area_mean, digits = 3),
+                  prettyNum(informal_area_sd, digits = 3),
+                  prettyNum(informal_area_median, digits = 3),
+                  prettyNum(informal_area_n, digits = 3),
+                  prettyNum(informal_area_se, digits = 3),
+                  format(informal_start_date_mean, format = "%d %b %Y"),
+                  format(informal_FWS_concl_date_mean, format = "%d %b %Y"),
+                  # prettyNum(informal_start_date_sd, digits = 3),
+                  # prettyNum(informal_FWS_concl_date_sd, digits = 3),
+                  prettyNum(informal_lat_mean, digits = 3),
+                  prettyNum(informal_lat_sd, digits = 3),
+                  prettyNum(informal_long_mean, digits = 3),
+                  prettyNum(informal_long_sd, digits = 3))
+    
+    result <- data.frame(variable, stat, formal, informal)
+    result
+}
+
+summary_stats <- check_area_disturbed(combo_dat)
+summary_stats
+
+amod1 <- lm(log(combo_dat$area) ~ combo_dat$formal_in)
+summary(amod1)
+hist(resid(amod1))
+
+amod2 <- lm(combo_dat$area ~ combo_dat$long_dec_deg.x)
+summary(amod2)
+
+
+
+
+
+
+
+
+
 
 
