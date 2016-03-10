@@ -299,9 +299,7 @@ check_area_disturbed <- function(dat) {
                 prettyNum(formal_area_n, digits = 3),
                 prettyNum(formal_area_se, digits = 3),
                 format(formal_start_date_mean, format = "%d %b %Y"),
-                # prettyNum(formal_start_date_sd, digits = 3),
                 format(formal_FWS_concl_date_mean, format = "%d %b %Y"),
-                # prettyNum(formal_FWS_concl_date_sd, digits = 3),
                 prettyNum(formal_lat_mean, digits = 3),
                 prettyNum(formal_lat_sd, digits = 3),
                 prettyNum(formal_long_mean, digits = 3),
@@ -314,8 +312,6 @@ check_area_disturbed <- function(dat) {
                   prettyNum(informal_area_se, digits = 3),
                   format(informal_start_date_mean, format = "%d %b %Y"),
                   format(informal_FWS_concl_date_mean, format = "%d %b %Y"),
-                  # prettyNum(informal_start_date_sd, digits = 3),
-                  # prettyNum(informal_FWS_concl_date_sd, digits = 3),
                   prettyNum(informal_lat_mean, digits = 3),
                   prettyNum(informal_lat_sd, digits = 3),
                   prettyNum(informal_long_mean, digits = 3),
@@ -335,7 +331,9 @@ hist(resid(amod1))
 amod2 <- lm(combo_dat$area ~ combo_dat$long_dec_deg.x)
 summary(amod2)
 
-
+ggplot(combo_dat, aes(area, fill = formal_in, colour = formal_in)) +
+    geom_density(alpha = 0.3) +
+    theme_hc()
 
 
 
