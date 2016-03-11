@@ -336,8 +336,30 @@ ggplot(combo_dat, aes(area, fill = formal_in, colour = formal_in)) +
     theme_hc()
 
 
+###############################################################################
+# Estimate total area
 
+bootstrap_total_area <- function(dat, B = 1000, N) {
+    areas <- dat$area[!is.na(dat$area)]
+    samp_reps <- rep(NA, B)
+    for (i in 1:1000) {
+        samp_reps[i] <- sum(sample(areas, replace = TRUE, size = N))
+    }
+    samp_df <- data.frame(samp_reps)
 
+    plt <- ggplot(samp_df, aes(samp_reps)) +
+               geom_histogram() + 
+               labs(x = "Sum of sampled areas (acres)",
+                    y = "Frequency") +
+               theme_hc()
+    print(plt)
+
+    print(mean(samp_reps))
+    print(quantile(probs = c(0.025, 0.975), samp_reps))
+}
+
+bootstrap_total_area(form_dat, B=1000, N=6829)
+bootstrap_total_area(inform_dat, B=1000, N=81461)
 
 
 
