@@ -62,10 +62,10 @@ expect <- expect[expect$with_coord == TRUE, ]
 #
 # Do the first join to get consult data
 form_1 <- left_join(form, form_cons, by = "activity_code")
-dim(form_1)
-names(form_1)
+# dim(form_1)
+# names(form_1)
 form_1 <- form_1[, c(1:12, 15:20, 23:27, 34:36, 49)]
-names(form_1)
+# names(form_1)
 
 # Do the second join to get our expectations
 form_dat <- left_join(form_1, expect, by = c("work_type" = "Work_type"))
