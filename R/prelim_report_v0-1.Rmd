@@ -2,8 +2,7 @@
 title: Section 7 Compliance Exploration
 subtitle: 'Preliminary analyses'
 author: 'Jacob Malcom, Defenders of Wildlife, and Tiffany Kim, University of Maryland'
-output: 
-    tufte::tufte_html
+output: tufte::tufte_html
 ---
 
 ```{r, echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
@@ -128,7 +127,9 @@ make_expect_obs_hist <- function(dat) {
 }
 ```
 
-# Plots and such
+# Preliminary Analyses
+
+## **Observability**
 
 First we compare the distribution of whether we expected to see something to the rate at which we actually saw something. First, the formal consultations:
 
@@ -214,8 +215,8 @@ get_observabilities <- function(dat, formal_in) {
     tot_num_formal <- sum(type_count, na.rm = TRUE)
     exp_num_see <- sum(expect_to_see_all, na.rm = TRUE)
     cat(paste("Observability:\n\t", exp_num_see / tot_num_formal, "\n"))
-    cat(paste("# consultations in set:\n\t", tot_num_formal, "\n"))
-    cat(paste("# consultations we expect to see effects:\n\t", exp_num_see, "\n"))
+    cat(paste("Number of consultations in set:\n\t", tot_num_formal, "\n"))
+    cat(paste("Number of consultations we expect to see effects:\n\t", exp_num_see, "\n"))
 }
 ```
 
@@ -296,7 +297,15 @@ plot_observability_vs_available(inform_obs_dat)
 __*It's unfortunate that the labels overlap as much as they do, but without making a dynamic figure, this is the best I think we can hope for.*__
 
 
-## Total area
+## **Goal 2: Habitat area lost**
+
+First, we should check the distributions of area measurements.
+
+```{r, fig-8, fig.height = 6.5, fig.cap = "**Distribution of observed area (acres) of habitat destroyed or significantly modified.** More data is needed to fill out this distribution a bit.", echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
+ggplot(combo_dat, aes(area, fill = formal_in, colour = formal_in)) +
+    geom_density(alpha = 0.3) +
+    theme_hc()
+```
 
 Per Goal 2, we would like to say something about the total area of habitat that has been "given away" under section 7. Even though the sample sizes are relatively small at this point, we can bootstrap sample^[Bootstrapping is simply taking a random sample from among a starting dataset to calculate a particular statistic (in this case, the sum of areas) many times. From these samples we can get an estimated distribution of the statistic.] from the areas that TK has measured and get a distribution of estimated areas affected. First the formal consultations:
 
@@ -316,19 +325,19 @@ bootstrap_total_area <- function(dat, B = 1000, N) {
                theme_hc()
     print(plt)
 
-    print(paste("Mean:", mean(samp_reps)[1]))
+    cat(paste("Mean:", mean(samp_reps)[1], "\n"))
     quants <- quantile(probs = c(0.025, 0.975), samp_reps)
-    print(paste("95% CI:", quants[1], "-", quants[2] ))
+    cat(paste("95% CI:", quants[1], "-", quants[2], "\n"))
 }
 ```
 
-```{r, warning = FALSE, error = FALSE, message = FALSE}
+```{r, fig-9, fig.height = 6.5, fig.cap = "**Distribution of total estimated area 'lost' from section 7 _formal_ consultations.** For each bootstrap replicate, _n_ = 6,832 random samples were taken from the observed distribution of areas, then summed.", echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
 bootstrap_total_area(form_dat, B=1000, N=6829)
 ```
 
 So about 120,000 acres for formal consultations...
 
-```{r, warning = FALSE, error = FALSE, message = FALSE}
+```{r, fig-10,  fig.height = 6.5, fig.cap = "**Distribution of total estimated area 'lost' from section 7 _informal_ consultations.** For each bootstrap replicate, _n_ = 81,461 random samples were taken from the observed distribution of areas, then summed.", echo = FALSE, warning = FALSE, error = FALSE, message = FALSE}
 bootstrap_total_area(inform_dat, B=1000, N=81461)
 ```
 
