@@ -19,15 +19,18 @@ library(dplyr)
 library(ggplot2)
 library(ggrepel)
 library(ggthemes)
+library(highcharter)
 library(lubridate)
+library(plotly)
 library(readxl)
 library(stringr)
+library(tidyr)
 
 source("R/multiplot.R")
 
 ###############################################################################
 # Load the data and prep
-base <- "/Users/jacobmalcom/Repos/Defenders/compliance_exploration"
+base <- "/Users/jacobmalcom/Repos/Defenders/analyses/compliance_exploration"
 form_eval <- paste0(base, "/data/remote_sensing_monitor_evaluation.xlsx")
 inform_eval <- paste0(base, "/data/remote_sensing_eval_informal.xlsx")
 form_consults <- paste0(base, "/data/random_sample_formal_consults_w_decdeg.tab")
@@ -53,8 +56,8 @@ names(inform_cons)
 names(expect)
 
 # Winnow to just the rows with data
-form <- form[1:146, ]
-inform <- inform[1:50, ]
+form <- form[1:sum(!is.na(form$activity_code)), ]
+inform <- inform[1:sum(!is.na(form$activity_code)), ]
 expect <- expect[expect$with_coord == TRUE, ]
 
 ###############################################################################
@@ -117,10 +120,12 @@ basic_means(inform_dat)
 make_expect_obs_hist <- function(dat) {
     par(mfrow=c(1,2))
     hist(dat$reconcile,
+         col = "gray50",
          xlab = "No    <--- Expect to see? --->    Yes",
          ylab = "Frequency",
          main = "")
     hist(dat$action_found,
+         col = "gray50",
          xlab = "No    <--- Observed? --->    Yes",
          ylab = "",
          main = "")
@@ -129,13 +134,21 @@ make_expect_obs_hist <- function(dat) {
 make_expect_obs_hist(form_dat)
 make_expect_obs_hist(inform_dat)
 
+form_dat$exp_obs <- ifelse(form_dat$reconcile == 1,
+                           "Observable",
+                           ifelse(form_dat$reconcile == 0.5,
+                                  "Maybe",
+                                  "Not observeable"))
+ggplot(data = form_dat, aes(factor(exp_obs))) +
+    geom_bar()
+
 # Now let's look by work cat and type
 scatter_and_violin_work_cat <- function(dat) {
     plt <- ggplot(dat, aes(factor(work_category), action_found)) +
            geom_violin(fill = "#D1E9D6", colour = "white") +
-           geom_jitter(width = 0.3, height = 0.05, alpha = 0.3, size = 4) +
+           geom_jitter(width = 0.3, height = 0.05, alpha = 0.2, size = 2) +
            labs(x = "",
-                y = "No              <--- Action found? --->              Yes") +
+                y = "No <--- Action found? ---> Yes") +
            theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
            theme_hc()
     plt
@@ -143,7 +156,7 @@ scatter_and_violin_work_cat <- function(dat) {
 
 multiplot(scatter_and_violin_work_cat(form_dat),
           scatter_and_violin_work_cat(inform_dat),
-          cols = 2)
+          cols = 1)
 
 scatter_and_violin_work_type <- function(dat) {
     plt <- ggplot(dat, aes(factor(work_type), action_found)) +
@@ -158,16 +171,24 @@ scatter_and_violin_work_type <- function(dat) {
 
 multiplot(scatter_and_violin_work_type(form_dat),
           scatter_and_violin_work_type(inform_dat),
-          cols = 2)
+          cols = 1)
 
 # Curious about the distribution of earliest image dates:
 mean(form_dat$earliest_date, na.rm = T)
 median(form_dat$earliest_date, na.rm = T)
 summary(form_dat$earliest_date, na.rm = T)
-hist(form_dat$earliest_date, breaks = "years")
+
+hist(form_dat$earliest_date, 
+     xlab = "Earliest image date",
+     ylab = "Frequency",
+     main = "",
+     freq = TRUE,
+     col = "gray50",
+     border = "white",
+     breaks = "years")
 
 ggplot(combo_dat, aes(earliest_date)) +
-    geom_histogram() +
+    geom_histogram(colour="white") +
     labs(x = "Earliest Aerial Image Date") +
     theme_hc()
 
@@ -253,6 +274,60 @@ plot_observability_vs_available <- function(dat) {
 plot_observability_vs_available(form_obs_dat)
 plot_observability_vs_available(inform_obs_dat)
 
+plot_ly(form_obs_dat, 
+        type = "scatter",
+        mode = "markers",
+        x = type_count, 
+        y = type_mean, 
+        text = paste("Work type:", work, "<br>Work category:", cat), 
+        marker = list(color = substr(viridis(n = length(unique(form_obs_dat$cat))), 0, 7),
+                      opacity = 0.6,
+                      size = 20)) %>%
+layout(xaxis = list(title = "# actions"),
+       yaxis = list(title = "Prop. observed"))
+
+###########################################################################
+# Wonder how the mean changes with sample size
+
+mean_samp <- function(x) {
+    medians <- vector()
+    means <- vector()
+    ns <- vector()
+    for (i in c(10, 20, 50, 75, 100, 150)) {
+        for (j in 1:100) {
+            cur_samp <- sample(x, i)
+            cur_mean <- mean(cur_samp, na.rm = TRUE)
+            cur_median <- median(cur_samp, na.rm = TRUE)
+            medians <- c(medians, cur_median)
+            means <- c(means, cur_mean)
+            ns <- c(ns, i)
+        }
+    }
+    res <- data.frame(ns, means, medians)
+    return(res)
+}
+
+form_mean_Ns <- mean_samp(form_dat$area)
+inform_mean_Ns <- mean_samp(inform_dat$area)
+
+aplt <- ggplot(data = form_mean_Ns, aes(x = factor(ns), y = means)) +
+        geom_violin(fill = "lightsteelblue") +
+        geom_hline(yintercept = mean(form_dat$area, na.rm=TRUE), 
+                   color = "red") +
+        labs(x = "Sample Size",
+             y = "Mean area",
+             title = "Formal") +
+        theme_hc()
+bplt <- ggplot(data = inform_mean_Ns, aes(x = factor(ns), y = means)) +
+        geom_violin(fill = "lightsteelblue") +
+        geom_hline(yintercept = mean(inform_dat$area, na.rm=TRUE), 
+                   color = "red") +
+        labs(x = "Sample Size",
+             y = "",
+             title = "Informal") +
+        theme_hc()
+multiplot(aplt, bplt, cols = 2)
+
 ###########################################################################
 # Let's look for some other differences, if any
 check_area_disturbed <- function(dat) {
@@ -324,7 +399,7 @@ check_area_disturbed <- function(dat) {
 summary_stats <- check_area_disturbed(combo_dat)
 summary_stats
 
-amod1 <- lm(log(combo_dat$area) ~ combo_dat$formal_in)
+amod1 <- lm(log(combo_dat$area + 0.01) ~ combo_dat$formal_in)
 summary(amod1)
 hist(resid(amod1))
 
@@ -342,13 +417,13 @@ ggplot(combo_dat, aes(area, fill = formal_in, colour = formal_in)) +
 bootstrap_total_area <- function(dat, B = 1000, N) {
     areas <- dat$area[!is.na(dat$area)]
     samp_reps <- rep(NA, B)
-    for (i in 1:1000) {
+    for (i in 1:B) {
         samp_reps[i] <- sum(sample(areas, replace = TRUE, size = N))
     }
     samp_df <- data.frame(samp_reps)
 
     plt <- ggplot(samp_df, aes(samp_reps)) +
-               geom_histogram() + 
+               geom_histogram(colour = "white") + 
                labs(x = "Sum of sampled areas (acres)",
                     y = "Frequency") +
                theme_hc()
@@ -356,12 +431,41 @@ bootstrap_total_area <- function(dat, B = 1000, N) {
 
     print(mean(samp_reps))
     print(quantile(probs = c(0.025, 0.975), samp_reps))
+    return(samp_df)
 }
 
-bootstrap_total_area(form_dat, B=1000, N=6829)
-bootstrap_total_area(inform_dat, B=1000, N=81461)
+form_boot <- bootstrap_total_area(form_dat, B=10000, N=6829)
+inform_boot <- bootstrap_total_area(inform_dat, B=10000, N=81461)
 
+boots <- data.frame(formal = form_boot$samp_reps, informal = inform_boot$samp_reps)
+head(boots)
+boots$total <- boots$form + boots$inform
+boots$total_ha <- boots$total * 0.404686
 
+boot2 <- boots[,1:2] %>% gather()
+names(boot2) <- c("type", "area")
 
+plt <- ggplot(boot2, aes(area, fill = type)) +
+           geom_histogram(bins = 100) + 
+           labs(x = "\nSum of sampled areas (acres)",
+                y = "Frequency\n") +
+           scale_fill_viridis(discrete = TRUE,
+                              guide = guide_legend(title = "Consult. type")) +
+           theme_hc() +
+           theme(legend.position = "right",
+                 legend.title = element_text(size = 8),
+                 legend.text = element_text(size = 8))
+print(plt)
+
+## Am going to need to figure out how to weight the samples by prob coords.
+mod1 <- lm(area ~ ESOffice.x, data = form_dat)
+summary(mod1)
+hist(resid(mod1))
+
+mod2 <- lm(area ~ ESOffice.x, data = inform_dat)
+summary(mod2)
+hist(resid(mod2))
+
+## Turns out, no. There is no 
 
 
