@@ -109,6 +109,9 @@ write.table(combo_dat,
             quote = FALSE,
             row.names = FALSE)
 
+save(combo_dat,
+     file = "~/Google Drive/Defenders/EndSpCons_shared/Compliance Exploration/Study/merged_formal_informal_data.RData")
+
 ###############################################################################
 # Let's do some plotting and analysis!
 
@@ -178,6 +181,23 @@ scatter_and_violin_work_type <- function(dat) {
 multiplot(scatter_and_violin_work_type(form_dat),
           scatter_and_violin_work_type(inform_dat),
           cols = 1)
+
+# habitat change categories by formal
+trans_hab <- function(x) {
+    if (is.na(x) | is.null(x)) NA
+    else if (x == 1) "nat -> nat"
+    else if (x == 2) "nat -> ag"
+    else if (x == 3) "nat -> dev"
+    else if (x == 4) "ag -> dev"
+    else "dev -> dev"
+}
+
+q <- c(1, 2, 1, 3, NA)
+w <- sapply(q, trans_hab)
+
+tmp <- sapply(combo_dat$hab_chg, trans_hab)
+table(tmp, combo_dat$formal_in)
+
 
 # Curious about the distribution of earliest image dates:
 mean(form_dat$earliest_date, na.rm = T)
