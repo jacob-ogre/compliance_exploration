@@ -466,6 +466,7 @@ mod2 <- lm(area ~ ESOffice.x, data = inform_dat)
 summary(mod2)
 hist(resid(mod2))
 
-## Turns out, no. There is no 
+## Turns out, no. There is no significant relationship, so I don't think more 
+## complex sampling is warranted.
 
 
