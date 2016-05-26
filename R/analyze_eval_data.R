@@ -103,6 +103,12 @@ form_dat$formal_in <- rep("formal", length(form_dat$activity_code))
 inform_dat$formal_in <- rep("informal", length(inform_dat$activity_code))
 combo_dat <- rbind(form_dat, inform_dat)
 
+write.table(combo_dat, 
+            file = "~/Google Drive/Defenders/EndSpCons_shared/Compliance Exploration/Study/merged_formal_informal_data.tsv",
+            sep = "\t",
+            quote = FALSE,
+            row.names = FALSE)
+
 ###############################################################################
 # Let's do some plotting and analysis!
 
@@ -190,6 +196,13 @@ hist(form_dat$earliest_date,
 ggplot(combo_dat, aes(earliest_date)) +
     geom_histogram(colour="white") +
     labs(x = "Earliest Aerial Image Date") +
+    theme_hc()
+
+# observability by FY
+ggplot(data = combo_dat, aes(x = factor(FY), y = action_found, colour = formal_in)) + 
+    geom_violin(fill = viridis(1), alpha = 0.3) + 
+    geom_jitter(alpha = 0.3, height = 0.1, size = 3) + 
+    labs(x = "", y = "No  <--  Action found?  -->  Yes") +
     theme_hc()
 
 ###########################################################################
@@ -287,7 +300,7 @@ layout(xaxis = list(title = "# actions"),
        yaxis = list(title = "Prop. observed"))
 
 ###########################################################################
-# Wonder how the mean changes with sample size
+# Wonder how the mean area changes with sample size
 
 mean_samp <- function(x) {
     medians <- vector()
@@ -415,10 +428,12 @@ ggplot(combo_dat, aes(area, fill = formal_in, colour = formal_in)) +
 # Estimate total area
 
 bootstrap_total_area <- function(dat, B = 1000, N) {
-    areas <- dat$area[!is.na(dat$area)]
+    areas <- dat[!is.na(dat$area) & (dat$hab_chg == 2 |
+                                     dat$hab_chg == 3 |
+                                     dat$hab_chg == 4), ]$area
     samp_reps <- rep(NA, B)
     for (i in 1:B) {
-        samp_reps[i] <- sum(sample(areas, replace = TRUE, size = N))
+        samp_reps[i] <- sum(sample(areas, replace = TRUE, size = N), na.rm=TRUE)
     }
     samp_df <- data.frame(samp_reps)
 
@@ -430,12 +445,39 @@ bootstrap_total_area <- function(dat, B = 1000, N) {
     print(plt)
 
     print(mean(samp_reps))
-    print(quantile(probs = c(0.025, 0.975), samp_reps))
+    print(quantile(probs = c(0.025, 0.975), samp_reps, na.rm = TRUE))
     return(samp_df)
 }
 
 form_boot <- bootstrap_total_area(form_dat, B=10000, N=6829)
 inform_boot <- bootstrap_total_area(inform_dat, B=10000, N=81461)
+
+bootstrap_forest_area <- function(dat, B = 1000, N) {
+    areas <- dat[!is.na(dat$area) & dat$work_category == "forestry"
+                 & (dat$hab_chg == 2 |
+                    dat$hab_chg == 3 |
+                    dat$hab_chg == 4), ]$area
+    samp_reps <- rep(NA, B)
+    for (i in 1:B) {
+        samp_reps[i] <- sum(sample(areas, replace = TRUE, size = N))
+    }
+    samp_df <- data.frame(samp_reps)
+
+    plt <- ggplot(samp_df, aes(samp_reps)) +
+               geom_histogram(colour = "white") + 
+               labs(x = "Sum of sampled areas (ha)",
+                    y = "Frequency") +
+               theme_hc()
+    print(plt)
+
+    print(mean(samp_reps))
+    print(quantile(probs = c(0.025, 0.975), samp_reps))
+    return(samp_df)
+}
+
+form_boot <- bootstrap_forest_area(form_dat, B=10000, N=361)
+inform_boot <- bootstrap_total_area(inform_dat, B=10000, N=81461)
+
 
 boots <- data.frame(formal = form_boot$samp_reps, informal = inform_boot$samp_reps)
 head(boots)
@@ -465,8 +507,29 @@ hist(resid(mod1))
 mod2 <- lm(area ~ ESOffice.x, data = inform_dat)
 summary(mod2)
 hist(resid(mod2))
+anova(mod2)
 
 ## Turns out, no. There is no significant relationship, so I don't think more 
 ## complex sampling is warranted.
 
+
+mod1 <- lm(area ~ work_category, data = form_dat)
+summary(mod1)
+hist(resid(mod1))
+
+mod2 <- lm(area ~ work_category, data = inform_dat)
+summary(mod2)
+hist(resid(mod2))
+
+ggplot(data = form_dat, aes(x = factor(work_category), y = area)) +
+    geom_boxplot() +
+    labs(x = "", y = "Area (ha)") +
+    theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
+    theme_hc()
+
+ggplot(data = inform_dat, aes(x = factor(work_category), y = area)) +
+    geom_boxplot() +
+    labs(x = "", y = "Area (ha)") +
+    theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
+    theme_hc()
 
