@@ -1,19 +1,5 @@
+# BSD_2_clause
 # Analysis of the monitoring data.
-# Copyright (c) 2016 Defenders of Wildlife, jmalcom@defenders.org
-
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-# GNU General Public License for more details.
-
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, see <http://www.gnu.org/licenses/>.
-# 
 
 library(dplyr)
 library(ggplot2)
@@ -22,15 +8,16 @@ library(ggthemes)
 library(highcharter)
 library(lubridate)
 library(plotly)
+library(readr)
 library(readxl)
 library(stringr)
 library(tidyr)
 
-source("R/multiplot.R")
+source("multiplot.R")
 
 ###############################################################################
 # Load the data and prep
-base <- "/Users/jacobmalcom/Repos/Defenders/analyses/compliance_exploration"
+base <- "/Users/jacobmalcom/Work/Repos/Defenders/analyses/compliance_exploration"
 form_eval <- paste0(base, "/data/remote_sensing_monitor_evaluation.xlsx")
 inform_eval <- paste0(base, "/data/remote_sensing_eval_informal.xlsx")
 form_consults <- paste0(base, "/data/random_sample_formal_consults_w_decdeg.tab")
@@ -39,13 +26,13 @@ expected_f <- paste0(base, "/data/joined_w_Nconsults_Nformal.tab")
 
 form <- read_excel(form_eval, sheet = 1)
 inform <- read_excel(inform_eval, sheet = 1)
-form_cons <- read.table(form_consults, 
-                        header = T, 
-                        sep = "\t", 
+form_cons <- read.table(form_consults,
+                        header = T,
+                        sep = "\t",
                         stringsAsFactors = F)
-inform_cons <- read.table(inform_consults, 
-                          header = T, 
-                          sep = "\t", 
+inform_cons <- read.table(inform_consults,
+                          header = T,
+                          sep = "\t",
                           stringsAsFactors = F)
 expect <- read.table(expected_f, header = T, sep = "\t", stringsAsFactors = F)
 
@@ -76,7 +63,7 @@ names(form_dat)[2] <- "action_found"
 
 # Informal consultations
 #
-# Do the first join to get consult data
+# Do the first join to get consult data for informal consults
 dim(inform)
 inform_1 <- left_join(inform, inform_cons, by = "activity_code")
 dim(inform_1)
@@ -103,23 +90,20 @@ form_dat$formal_in <- rep("formal", length(form_dat$activity_code))
 inform_dat$formal_in <- rep("informal", length(inform_dat$activity_code))
 combo_dat <- rbind(form_dat, inform_dat)
 
-write.table(combo_dat, 
-            file = "~/Google Drive/Defenders/EndSpCons_shared/Compliance Exploration/Study/merged_formal_informal_data.tsv",
-            sep = "\t",
-            quote = FALSE,
-            row.names = FALSE)
+write_tsv(combo_dat,
+          file.path(base, "data", "merged_formal_informal_data.tsv"))
 
-save(combo_dat,
-     file = "~/Google Drive/Defenders/EndSpCons_shared/Compliance Exploration/Study/merged_formal_informal_data.RData")
+saveRDS(combo_dat,
+        file.path(base, "data", "merged_formal_informal_data.rds"))
 
 ###############################################################################
 # Let's do some plotting and analysis!
 
 basic_means <- function(dat) {
-    cat(paste("mean action found", 
+    cat(paste("mean action found",
               mean(dat$action_found, na.rm = TRUE),
               "\n"))
-    cat(paste("mean action expected", 
+    cat(paste("mean action expected",
               mean(dat$reconcile, na.rm = TRUE),
               "\n"))
 }
@@ -127,18 +111,21 @@ basic_means(form_dat)
 basic_means(inform_dat)
 
 make_expect_obs_hist <- function(dat) {
-    par(mfrow=c(1,2))
-    hist(dat$reconcile,
-         col = "gray50",
-         xlab = "No    <--- Expect to see? --->    Yes",
-         ylab = "Frequency",
-         main = "")
-    hist(dat$action_found,
-         col = "gray50",
-         xlab = "No    <--- Observed? --->    Yes",
-         ylab = "",
-         main = "")
-    par(mfrow=c(1,1))
+  values <- c("No", "Maybe", "Yes")
+  exp <- table(dat$reconcile)
+  obs <- table(dat$action_found)
+  new <- data_frame(
+    OE = c(rep("Observed", 3), rep("Expected", 3)),
+    vals = c(values, values),
+    freq = c(obs, exp)
+  )
+  ggplot(data = new, aes(x = vals, y = freq)) +
+    geom_bar(stat = "identity") +
+    labs(x = "Action observability",
+         y = "# consultations") +
+    facet_grid(. ~ OE) +
+    theme_hc()
+
 }
 make_expect_obs_hist(form_dat)
 make_expect_obs_hist(inform_dat)
@@ -204,7 +191,7 @@ mean(form_dat$earliest_date, na.rm = T)
 median(form_dat$earliest_date, na.rm = T)
 summary(form_dat$earliest_date, na.rm = T)
 
-hist(form_dat$earliest_date, 
+hist(form_dat$earliest_date,
      xlab = "Earliest image date",
      ylab = "Frequency",
      main = "",
@@ -219,9 +206,9 @@ ggplot(combo_dat, aes(earliest_date)) +
     theme_hc()
 
 # observability by FY
-ggplot(data = combo_dat, aes(x = factor(FY), y = action_found, colour = formal_in)) + 
-    geom_violin(fill = viridis(1), alpha = 0.3) + 
-    geom_jitter(alpha = 0.3, height = 0.1, size = 3) + 
+ggplot(data = combo_dat, aes(x = factor(FY), y = action_found, colour = formal_in)) +
+    geom_violin(fill = viridis(1), alpha = 0.3) +
+    geom_jitter(alpha = 0.3, height = 0.1, size = 3) +
     labs(x = "", y = "No  <--  Action found?  -->  Yes") +
     theme_hc()
 
@@ -292,10 +279,10 @@ inform_obs_dat <- make_scatter_df(inform_dat, inform_cons, "informal")
 plot_observability_vs_available <- function(dat) {
     plt <- ggplot(dat, aes(type_mean, type_count)) +
            geom_jitter(width = 0, height = 0.1, alpha = 0.3, size = 4) +
-           geom_label_repel(aes(type_mean, 
-                                type_count, 
+           geom_label_repel(aes(type_mean,
+                                type_count,
                                 fill = factor(cat),
-                                label = str_wrap(work, width = 30)), 
+                                label = str_wrap(work, width = 30)),
                            size = 2,
                            show.legend = FALSE) +
            labs(x = "Mean success rate",
@@ -307,12 +294,12 @@ plot_observability_vs_available <- function(dat) {
 plot_observability_vs_available(form_obs_dat)
 plot_observability_vs_available(inform_obs_dat)
 
-plot_ly(form_obs_dat, 
+plot_ly(form_obs_dat,
         type = "scatter",
         mode = "markers",
-        x = type_count, 
-        y = type_mean, 
-        text = paste("Work type:", work, "<br>Work category:", cat), 
+        x = type_count,
+        y = type_mean,
+        text = paste("Work type:", work, "<br>Work category:", cat),
         marker = list(color = substr(viridis(n = length(unique(form_obs_dat$cat))), 0, 7),
                       opacity = 0.6,
                       size = 20)) %>%
@@ -345,7 +332,7 @@ inform_mean_Ns <- mean_samp(inform_dat$area)
 
 aplt <- ggplot(data = form_mean_Ns, aes(x = factor(ns), y = means)) +
         geom_violin(fill = "lightsteelblue") +
-        geom_hline(yintercept = mean(form_dat$area, na.rm=TRUE), 
+        geom_hline(yintercept = mean(form_dat$area, na.rm=TRUE),
                    color = "red") +
         labs(x = "Sample Size",
              y = "Mean area",
@@ -353,7 +340,7 @@ aplt <- ggplot(data = form_mean_Ns, aes(x = factor(ns), y = means)) +
         theme_hc()
 bplt <- ggplot(data = inform_mean_Ns, aes(x = factor(ns), y = means)) +
         geom_violin(fill = "lightsteelblue") +
-        geom_hline(yintercept = mean(inform_dat$area, na.rm=TRUE), 
+        geom_hline(yintercept = mean(inform_dat$area, na.rm=TRUE),
                    color = "red") +
         labs(x = "Sample Size",
              y = "",
@@ -395,10 +382,10 @@ check_area_disturbed <- function(dat) {
     informal_long_sd <- sd(idat$long_dec_deg.x, na.rm = T)
 
     variable <- c("area", "area", "area", "area", "area",
-                  "start date", "end date", 
+                  "start date", "end date",
                   "latitude", "latitude",
                   "longitude", "longitude")
-    stat <- c("mean", "sd", "median", "n", "se", 
+    stat <- c("mean", "sd", "median", "n", "se",
               "mean", "mean", rep(c("mean", "sd"), 2))
     print(stat)
     formal <- c(prettyNum(formal_area_mean, digits = 3),
@@ -424,7 +411,7 @@ check_area_disturbed <- function(dat) {
                   prettyNum(informal_lat_sd, digits = 3),
                   prettyNum(informal_long_mean, digits = 3),
                   prettyNum(informal_long_sd, digits = 3))
-    
+
     result <- data.frame(variable, stat, formal, informal)
     result
 }
@@ -458,7 +445,7 @@ bootstrap_total_area <- function(dat, B = 1000, N) {
     samp_df <- data.frame(samp_reps)
 
     plt <- ggplot(samp_df, aes(samp_reps)) +
-               geom_histogram(colour = "white") + 
+               geom_histogram(colour = "white") +
                labs(x = "Sum of sampled areas (acres)",
                     y = "Frequency") +
                theme_hc()
@@ -484,7 +471,7 @@ bootstrap_forest_area <- function(dat, B = 1000, N) {
     samp_df <- data.frame(samp_reps)
 
     plt <- ggplot(samp_df, aes(samp_reps)) +
-               geom_histogram(colour = "white") + 
+               geom_histogram(colour = "white") +
                labs(x = "Sum of sampled areas (ha)",
                     y = "Frequency") +
                theme_hc()
@@ -508,7 +495,7 @@ boot2 <- boots[,1:2] %>% gather()
 names(boot2) <- c("type", "area")
 
 plt <- ggplot(boot2, aes(area, fill = type)) +
-           geom_histogram(bins = 100) + 
+           geom_histogram(bins = 100) +
            labs(x = "\nSum of sampled areas (acres)",
                 y = "Frequency\n") +
            scale_fill_viridis(discrete = TRUE,
@@ -529,7 +516,7 @@ summary(mod2)
 hist(resid(mod2))
 anova(mod2)
 
-## Turns out, no. There is no significant relationship, so I don't think more 
+## Turns out, no. There is no significant relationship, so I don't think more
 ## complex sampling is warranted.
 
 
