@@ -4,478 +4,462 @@ author: "Tiffany Kim, Ya-Wei Li, and Jacob Malcom"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_document:
-  code_folding: hide
-  css: custom.css
-  df_print: kable
-  fig_caption: yes
-  fig_width: 7
-  highlight: tango
-  toc: true
-  toc_depth: 3
-  toc_float: true
+    code_folding: hide
+    css: custom.css
+    df_print: paged
+    fig_caption: yes
+    fig_width: 7.5
+    highlight: tango
+    toc: true
+    toc_depth: 3
+    toc_float: true
 ---
 
-## Section 7 compliance monitoring: Analyses
+## Overview
+
+### Section 7 compliance monitoring analyses
 
 This vignette captures the analyses in a forthcoming manuscript (preprint + 
 peer-reviewed paper) evaluating the utility of remotely sensed data for monitoring
-compliance with section 7 of the US Endangered Species Act. 
+compliance with section 7 of the US Endangered Species Act. The section 7 
+consultation data - work types, coordinates, etc. - are from the TAILS database
+from the US Fish and Wildlife Service (FWS); see 
+[Malcom and Li 2015, _PNAS_](http://www.pnas.org/content/112/52/15844.abstract) 
+for more information.
 
 ```{r setup, include=FALSE}
 library(dplyr)
+library(ggalt)
 library(ggplot2)
 library(ggrepel)
 library(ggthemes)
 library(highcharter)
+library(knitr)
+library(leaflet)
 library(lubridate)
 library(plotly)
 library(readr)
 library(readxl)
 library(stringr)
+library(superheat)
 library(tidyr)
+library(viridis)
+
+inf <- system.file("extdata", "merged_formal_informal.rds", 
+                   package = "compliance.exploration")
+dat <- readRDS(inf)
+dat$earliest_date <- as.Date(dat$earliest_date)
+n_obs <- dim(dat)[1]
+formal <- filter(dat, formal_in == "formal")
+informal <- filter(dat, formal_in == "informal")
+
+form_rand <- system.file("extdata", "formal_consult_random.rds",
+                         package = "compliance.exploration")
+inform_rand <- system.file("extdata", "informal_consult_random.rds",
+                           package = "compliance.exploration")
+form_cons <- readRDS(form_rand)
+inform_cons <- readRDS(inform_rand)
+
 ```
 
-###############################################################################
-# Let's do some plotting and analysis!
+## Data Summary
 
-basic_means <- function(dat) {
-    cat(paste("mean action found",
-              mean(dat$action_found, na.rm = TRUE),
-              "\n"))
-    cat(paste("mean action expected",
-              mean(dat$reconcile, na.rm = TRUE),
-              "\n"))
+The dataset includes `r n_obs` consultations randomly selected from among 
+over 44,000 consultations recorded with coordinates by FWS from 2008-2015.
+
+### Top of the data
+
+```{r datahead}
+head(dat)
+dim(dat)
+```
+
+### Formal and informal consultation
+
+Although FWS's consultation data shows that [formal consultations](https://www.fws.gov/endangered/what-we-do/faq.html) only make up
+~7% of all consultations, actions only undergo formal consultation if an ESA-
+listed species is likely to be harmed. That is, we are generally more interested
+in actions that have undergone formal consultation. The 182 formal consultations
+we investigated are therefore a "denser" sampling of all formal consultations 
+than the 182 samples of informal consultations.
+
+### Geography
+
+The locations of the consultations in our sample generally reflected the 
+distribution of consultations observed by [Malcom and Li (2015)](http://www.pnas.org/content/112/52/15844.abstract):
+formal consultations were more likely to come from the western US, informal 
+consultations more likely from the East. The bias in which offices record 
+coordinates is apparent with the lack of formal consultations from some states,
+like Colorado (n ~ 500 formal consultations, but rarely records coordinates) and
+Washington (n ~ 500 formal consultations, high data recording rate).
+
+```{r map}
+### A static map in case we want one for Supp. Info.
+#
+# to_map <- dplyr::filter(dat, dat$lat_dec_deg.x > 20 & dat$lat_dec_deg.x < 60)
+# map <- qmplot(
+#     data = to_map,
+#     x = long_dec_deg.x, 
+#     y = lat_dec_deg.x, 
+#     maptype = "toner-lite",
+#     color = formal_in,
+#     size = I(2),
+#     alpha = I(0.5),
+#     extent = "normal",
+#     zoom = 5) +
+#   theme_bw() +
+#   labs(x = "Longitude",
+#        y = "Latitude") +
+#   scale_color_viridis(discrete = TRUE, name = "Type")
+# ggsave(plot = map, "inst/figs/map.pdf")
+
+cols <- substr(
+  viridis(3), 0, 7
+)
+
+dat$formal_colors <- ifelse(
+  dat$formal_in == "formal",
+  cols[1],
+  cols[3]
+)
+
+tags$div(
+  style = "background-color: #e9e9e9",
+  leaflet(dat) %>%
+    setView(lng=-95, lat=38, zoom = 4) %>%
+    addProviderTiles("Stamen.TonerLite") %>%
+    mapOptions(zoomToLimits = "first") %>%
+    addCircleMarkers(
+      lng= ~long_dec_deg.x, 
+      lat= ~lat_dec_deg.x,
+      stroke = FALSE,
+      fillOpacity = 0.5,
+      fillColor = ~formal_colors,
+      popup = ~activity_code
+    )
+)
+```
+
+### Other variables summaries
+
+__Top lead agencies__
+
+```{r agency} 
+head(sort(table(as.character(dat$lead_agency)), decreasing = TRUE), 10)
+```
+
+__Top 10 lead ES offices__
+
+```{r ESO} 
+head(sort(table(as.character(dat$ESOffice.x)), decreasing = TRUE), 10)
+```
+
+__Fiscal years__
+
+```{r FY} 
+table(dat$FY)
+```
+
+## Action Observability
+
+### Majority of actions not found
+
+Before starting to explore the remotely sensed data, two authors (TK and JM) 
+independently scored each action type for _expected_ observability, with:
+
+- 0: not expected to be observered;
+- 0.5: may be observed or unknown whether to expect; and
+- 1: expected to be observed.
+
+After independent scoring, we met and reconciled the expected scores. The authors 
+- primarily TK - then attempted to find all `r n_obs` consultations in aerial
+images using Google Earth and the coordinates provided by FWS. 
+
+First, the overall expected and observed observability for formal and informal 
+consultations:
+
+```{r p1}
+expected <- aggregate(reconcile ~ formal_in, 
+                      data = dat, 
+                      FUN = mean, na.rm = TRUE)
+names(expected)[2] <- "mean"
+expected$OE <- "Exp"
+observed <- aggregate(action_found ~ formal_in, 
+                      data = dat, 
+                      FUN = mean, na.rm = TRUE)
+names(observed)[2] <- "mean"
+observed$OE <- "Obs"
+overall <- rbind(expected, observed)
+overall <- select(overall, OE, formal_in, mean)
+names(overall) <- c("Obs/Exp", "Formal/Informal", "Mean")
+kable(overall, digits = 3)
+```
+
+Next, we break the categories down to identify which classes changed between
+the expected and observed stages, e.g., if "maybe"s were, in reality, not 
+observable:
+
+```{r p2}
+values <- c("No", "Maybe", "Yes")
+for_exp <- table(filter(dat, formal_in == "formal")$reconcile)
+for_obs <- table(filter(dat, formal_in == "formal")$action_found)
+inf_exp <- table(filter(dat, formal_in == "informal")$reconcile)
+inf_obs <- table(filter(dat, formal_in == "informal")$action_found)
+new <- data_frame(
+  OE = c(rep("expected", 6), rep("observed", 6)),
+  `in/formal` = c(rep("formal", 3), rep("informal", 3),
+           rep("formal", 3), rep("informal", 3)),
+  observed = rep(values, 4),
+  frequency = c(for_exp, inf_exp, for_obs, inf_obs)
+)
+
+ggplot(data = new, aes(x = observed, y = frequency)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Action observability",
+       y = "# consultations") +
+  facet_grid(OE ~ `in/formal`) +
+  theme_hc()
+```
+
+The "Maybe" categories for expected were mostly "No" when observed, for both 
+formal and informal consultations.
+
+```{r p3}
+new
+```
+
+## Observability by Work Category 
+
+### High variation among work categories
+
+Determining the types of work that are most amenable to monitoring from the
+standpoint of observability - whether the effects of the action are observable 
+in aerial or satellite imagery - is a key challenge. Before showing 
+observability rate, we the sample size by work type and by formal/informal 
+consultation:
+
+```{r tmp}
+n_obs <- as_data_frame(table(dat$work_category, dat$formal_in))
+names(n_obs) <- c("work_cat", "formal_in", "n")
+
+marg <- ggplot(n_obs, aes(x = n, y = work_cat)) +
+  geom_lollipop(horizontal = TRUE, point.size = 3) +
+  facet_grid(. ~ formal_in) +
+  labs(x = NULL, y = "Sample size") +
+  theme_hc()
+marg
+
+# Remove the y-axis labels to make compound fig and save for the ms.
+# marg <- marge +
+#   theme(axis.title.y=element_blank(),
+#         axis.text.y=element_blank(),
+#         axis.ticks.y=element_blank())
+# ggsave("inst/figs/work_cat_counts.pdf", height = 9.75, width = 3.25)
+```
+
+And now the mean observability by work category and formal/informal consultation:
+
+```{r obs_heatmap}
+type_obs <- aggregate(
+  action_found ~ work_category + formal_in,
+  data = dat,
+  FUN = mean, na.rm = TRUE
+)
+names(type_obs) <- c("category", "in/formal", "observability")
+
+fig <- ggplot(type_obs, aes(y = category, x = `in/formal`, fill = observability)) +
+  geom_tile(color = "white", size = 0.1) +
+  labs(x = "Consultation Type", y = "") +
+  scale_y_discrete(limits = levels(type_obs$category)) +
+  scale_fill_viridis(name="Mean Observability") +
+  theme_hc()
+# fig
+# ggsave("inst/figs/work_cat_obs.pdf", height = 9.75, width = 6.5)
+
+# Use ggplotly for this HTML vignette:
+ggplotly(fig)
+```
+
+There has been a slight decrease in observability over time, but that
+decrease is not statistically significant:
+
+```{r obs_time}
+cor.test(dat$action_found, dat$FY)
+```
+
+## Expected Volume of Consultations
+
+### We expect ~40% overall observability if all coordinates recorded...
+
+```{r expected_overall}
+get_observabilities <- function(dat, formal_in) {
+  type_mean <- tapply(dat$action_found,
+                      INDEX = dat$work_type,
+                      FUN = mean, na.rm = TRUE)
+  type_median <- tapply(dat$action_found,
+                      INDEX = dat$work_type,
+                      FUN = median, na.rm = TRUE)
+  if (formal_in == "formal") {
+      type_count <- tapply(dat$N_formal,
+                           INDEX = dat$work_type,
+                           FUN = mean, na.rm = TRUE)
+  } else {
+      type_count <- tapply(dat$N_consultations,
+                           INDEX = dat$work_type,
+                           FUN = mean, na.rm = TRUE)
+  }
+  expect_to_see_all <- type_mean * type_count
+
+  # And these are the results at the highest level:
+  tot_num_formal <- sum(type_count, na.rm = TRUE)
+  exp_num_see <- sum(expect_to_see_all, na.rm = TRUE)
+  obs_rate <- round(exp_num_see / tot_num_formal, 2)
+  in_set <- round(tot_num_formal, 0)
+  exp_obs <- round(exp_num_see, 0)
+  return(c(obs_rate, in_set, exp_obs))
 }
-basic_means(form_dat)
-basic_means(inform_dat)
 
-make_expect_obs_hist <- function(dat) {
-  values <- c("No", "Maybe", "Yes")
-  exp <- table(dat$reconcile)
-  obs <- table(dat$action_found)
-  new <- data_frame(
-    OE = c(rep("Observed", 3), rep("Expected", 3)),
-    vals = c(values, values),
-    freq = c(obs, exp)
-  )
-  ggplot(data = new, aes(x = vals, y = freq)) +
-    geom_bar(stat = "identity") +
-    labs(x = "Action observability",
-         y = "# consultations") +
-    facet_grid(. ~ OE) +
-    theme_hc()
+rows <- c("Observability | work type", 
+          "# consultations in set",
+          "# consultations expect to see effects")
+exp_df <- data_frame(
+  value = rows,
+  formal = get_observabilities(formal, "formal"),
+  informal = get_observabilities(informal, "informal")
+)
+exp_df
+```
 
+_Note:_ The number of consultations in each set is the number in the work 
+categories we examined, not the total number of consultations with coordinates. 
+There is a long tail of work categories with few consultations.
+
+### ...but work type matters a lot
+
+Formal consultations:
+
+```{r availables, warning=FALSE, error=FALSE, message=FALSE}
+make_scatter_df <- function(dat, cons_dat, formal_in) {
+  type_mean <- tapply(dat$action_found,
+                      INDEX = dat$work_type,
+                      FUN = mean, na.rm = TRUE)
+  type_median <- tapply(dat$action_found,
+                      INDEX = dat$work_type,
+                      FUN = median, na.rm = TRUE)
+  if (formal_in == "formal") {
+      type_count <- tapply(dat$N_formal,
+                           INDEX = dat$work_type,
+                           FUN = mean, na.rm = TRUE)
+  } else {
+      type_count <- tapply(dat$N_consultations,
+                           INDEX = dat$work_type,
+                           FUN = mean, na.rm = TRUE)
+  }
+  expect_to_see_all <- type_mean * type_count
+
+  tmp_dat <- data.frame(type_count = as.vector(type_count),
+                        type_mean = as.vector(type_mean),
+                        work = names(type_count))
+  work_cat_type <- data.frame(cat = cons_dat$work_category,
+                              work = as.character(cons_dat$work_type))
+  work_cat_type$uniq <- duplicated(work_cat_type$work)
+  work_cat_type <- work_cat_type[work_cat_type$uniq == FALSE, ]
+  tmp_dat <- inner_join(tmp_dat, work_cat_type, by = "work")
+  return(tmp_dat)
 }
-make_expect_obs_hist(form_dat)
-make_expect_obs_hist(inform_dat)
+form_obs_dat <- make_scatter_df(formal, form_cons, "formal")
 
-form_dat$exp_obs <- ifelse(form_dat$reconcile == 1,
-                           "Observable",
-                           ifelse(form_dat$reconcile == 0.5,
-                                  "Maybe",
-                                  "Not observeable"))
-ggplot(data = form_dat, aes(factor(exp_obs))) +
-    geom_bar()
+plot_ly(data = form_obs_dat,
+        type = "scatter",
+        mode = "markers",
+        y = form_obs_dat$type_count,
+        x = round(form_obs_dat$type_mean, 2),
+        text = paste("Work type:", 
+                     form_obs_dat$work, 
+                     "<br>Work category:", 
+                     form_obs_dat$cat),
+        marker = list(
+          color = substr(
+            viridis(n = length(unique(form_obs_dat$cat))), 0, 7
+          ),
+          opacity = 0.6,
+          size = 20)
+        ) %>%
+layout(yaxis = list(title = "# actions"),
+       xaxis = list(title = "Prop. observed"))
 
-# Now let's look by work cat and type
-scatter_and_violin_work_cat <- function(dat) {
-    plt <- ggplot(dat, aes(factor(work_category), action_found)) +
-           geom_violin(fill = "#D1E9D6", colour = "white") +
-           geom_jitter(width = 0.3, height = 0.05, alpha = 0.2, size = 2) +
-           labs(x = "",
-                y = "No <--- Action found? ---> Yes") +
-           theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
-           theme_hc()
-    plt
-}
+tags$br()
+tags$br()
+```
 
-multiplot(scatter_and_violin_work_cat(form_dat),
-          scatter_and_violin_work_cat(inform_dat),
-          cols = 1)
+Informal consultations:
 
-scatter_and_violin_work_type <- function(dat) {
-    plt <- ggplot(dat, aes(factor(work_type), action_found)) +
-           geom_violin(fill = "#D1E9D6", colour = "white") +
-           geom_jitter(width = 0.3, height = 0.05, alpha = 0.3, size = 4) +
-           labs(x = "",
-                y = "No              <--- Action found? --->              Yes") +
-           theme(axis.text.x = element_text(angle = 25, hjust = 1)) +
-           theme_hc()
-    plt
-}
+```{r informal_consult_exp_type, warn=FALSE, error=FALSE, message=FALSE}
+inform_obs_dat <- suppressWarnings(
+  make_scatter_df(informal, inform_cons, "informal")
+)
 
-multiplot(scatter_and_violin_work_type(form_dat),
-          scatter_and_violin_work_type(inform_dat),
-          cols = 1)
+plot_ly(data = inform_obs_dat,
+        type = "scatter",
+        mode = "markers",
+        y = inform_obs_dat$type_count,
+        x = round(inform_obs_dat$type_mean, 2),
+        text = paste("Work type:", 
+                     inform_obs_dat$work, 
+                     "<br>Work category:", 
+                     inform_obs_dat$cat),
+        marker = list(
+          color = substr(
+            viridis(n = length(unique(inform_obs_dat$cat))), 0, 7
+          ),
+          opacity = 0.6,
+          size = 20)
+        ) %>%
+layout(yaxis = list(title = "# actions"),
+       xaxis = list(title = "Prop. observed"))
+```
 
-# habitat change categories by formal
+## Types of Change
+
+### Natural habitat to development is dominant type of change
+
+We recorded the type of habitat change observed at each found action site to
+evaluate the types of change that are consulted on:
+
+```{r habitat_chg_type}
 trans_hab <- function(x) {
     if (is.na(x) | is.null(x)) NA
-    else if (x == 1) "nat -> nat"
-    else if (x == 2) "nat -> ag"
-    else if (x == 3) "nat -> dev"
-    else if (x == 4) "ag -> dev"
-    else "dev -> dev"
+    else if (x == 1) "natural -> natural"
+    else if (x == 2) "natural -> agriculture"
+    else if (x == 3) "natural -> development"
+    else if (x == 4) "agriculture -> development"
+    else "development -> development"
 }
 
-q <- c(1, 2, 1, 3, NA)
-w <- sapply(q, trans_hab)
+tmp <- sapply(dat$hab_chg, trans_hab)
+conv_type <- table(tmp, dat$formal_in)
+conv_type <- data_frame(
+  conversion = row.names(conv_type),
+  formal = conv_type[, 1],
+  informal = conv_type[, 2]
+)
+conv_type
+```
 
-tmp <- sapply(combo_dat$hab_chg, trans_hab)
-table(tmp, combo_dat$formal_in)
+## Imagery Dates
 
+### Some images are old, but most are recent
 
-# Curious about the distribution of earliest image dates:
-mean(form_dat$earliest_date, na.rm = T)
-median(form_dat$earliest_date, na.rm = T)
-summary(form_dat$earliest_date, na.rm = T)
+Knowing the distribution of the oldest average aerial images is useful for 
+anticipating how far we can "turn the clock back" to track habitat changes at
+consultation sites.
 
-hist(form_dat$earliest_date,
-     xlab = "Earliest image date",
-     ylab = "Frequency",
-     main = "",
-     freq = TRUE,
-     col = "gray50",
-     border = "white",
-     breaks = "years")
+```{r img_date, warning=FALSE, error=FALSE, message=FALSE}
+summary(dat$earliest_date, na.rm = T)
 
-ggplot(combo_dat, aes(earliest_date)) +
+ggplot(dat, aes(earliest_date)) +
     geom_histogram(colour="white") +
     labs(x = "Earliest Aerial Image Date") +
     theme_hc()
-
-# observability by FY
-ggplot(data = combo_dat, aes(x = factor(FY), y = action_found, colour = formal_in)) +
-    geom_violin(fill = viridis(1), alpha = 0.3) +
-    geom_jitter(alpha = 0.3, height = 0.1, size = 3) +
-    labs(x = "", y = "No  <--  Action found?  -->  Yes") +
-    theme_hc()
-
-###########################################################################
-# OK, we want to get an overview of observeabilities:
-get_observabilities <- function(dat, formal_in) {
-    type_mean <- tapply(dat$action_found,
-                        INDEX = dat$work_type,
-                        FUN = mean, na.rm = TRUE)
-    type_median <- tapply(dat$action_found,
-                        INDEX = dat$work_type,
-                        FUN = median, na.rm = TRUE)
-    if (formal_in == "formal") {
-        type_count <- tapply(dat$N_formal,
-                             INDEX = dat$work_type,
-                             FUN = mean, na.rm = TRUE)
-    } else {
-        type_count <- tapply(dat$N_consultations,
-                             INDEX = dat$work_type,
-                             FUN = mean, na.rm = TRUE)
-    }
-    expect_to_see_all <- type_mean * type_count
-
-    # And these are the results at the highest level:
-    tot_num_formal <- sum(type_count, na.rm = TRUE)
-    exp_num_see <- sum(expect_to_see_all, na.rm = TRUE)
-    cat(paste("Observability:\n\t", exp_num_see / tot_num_formal, "\n"))
-    cat(paste("# consultations in set:\n\t", tot_num_formal, "\n"))
-    cat(paste("# consultations we expect to see effects:\n\t", exp_num_see, "\n"))
-}
-
-get_observabilities(form_dat, "formal")
-get_observabilities(inform_dat, "informal")
-
-# dat = the dplyr'd formal/informal data; cons_dat = formal/informal consult data
-make_scatter_df <- function(dat, cons_dat, formal_in) {
-    type_mean <- tapply(dat$action_found,
-                        INDEX = dat$work_type,
-                        FUN = mean, na.rm = TRUE)
-    type_median <- tapply(dat$action_found,
-                        INDEX = dat$work_type,
-                        FUN = median, na.rm = TRUE)
-    if (formal_in == "formal") {
-        type_count <- tapply(dat$N_formal,
-                             INDEX = dat$work_type,
-                             FUN = mean, na.rm = TRUE)
-    } else {
-        type_count <- tapply(dat$N_consultations,
-                             INDEX = dat$work_type,
-                             FUN = mean, na.rm = TRUE)
-    }
-    expect_to_see_all <- type_mean * type_count
-
-    tmp_dat <- data.frame(type_count = as.vector(type_count),
-                          type_mean = as.vector(type_mean),
-                          work = names(type_count))
-    work_cat_type <- data.frame(cat = cons_dat$work_category,
-                                work = as.character(cons_dat$work_type))
-    work_cat_type$uniq <- duplicated(work_cat_type$work)
-    work_cat_type <- work_cat_type[work_cat_type$uniq == FALSE, ]
-    tmp_dat <- inner_join(tmp_dat, work_cat_type, by = "work")
-    return(tmp_dat)
-}
-
-form_obs_dat <- make_scatter_df(form_dat, form_cons, "formal")
-inform_obs_dat <- make_scatter_df(inform_dat, inform_cons, "informal")
-
-plot_observability_vs_available <- function(dat) {
-    plt <- ggplot(dat, aes(type_mean, type_count)) +
-           geom_jitter(width = 0, height = 0.1, alpha = 0.3, size = 4) +
-           geom_label_repel(aes(type_mean,
-                                type_count,
-                                fill = factor(cat),
-                                label = str_wrap(work, width = 30)),
-                           size = 2,
-                           show.legend = FALSE) +
-           labs(x = "Mean success rate",
-                y = "# consultations in work type") +
-           theme_hc()
-    plt
-}
-
-plot_observability_vs_available(form_obs_dat)
-plot_observability_vs_available(inform_obs_dat)
-
-plot_ly(form_obs_dat,
-        type = "scatter",
-        mode = "markers",
-        x = type_count,
-        y = type_mean,
-        text = paste("Work type:", work, "<br>Work category:", cat),
-        marker = list(color = substr(viridis(n = length(unique(form_obs_dat$cat))), 0, 7),
-                      opacity = 0.6,
-                      size = 20)) %>%
-layout(xaxis = list(title = "# actions"),
-       yaxis = list(title = "Prop. observed"))
-
-###########################################################################
-# Wonder how the mean area changes with sample size
-
-mean_samp <- function(x) {
-    medians <- vector()
-    means <- vector()
-    ns <- vector()
-    for (i in c(10, 20, 50, 75, 100, 150)) {
-        for (j in 1:100) {
-            cur_samp <- sample(x, i)
-            cur_mean <- mean(cur_samp, na.rm = TRUE)
-            cur_median <- median(cur_samp, na.rm = TRUE)
-            medians <- c(medians, cur_median)
-            means <- c(means, cur_mean)
-            ns <- c(ns, i)
-        }
-    }
-    res <- data.frame(ns, means, medians)
-    return(res)
-}
-
-form_mean_Ns <- mean_samp(form_dat$area)
-inform_mean_Ns <- mean_samp(inform_dat$area)
-
-aplt <- ggplot(data = form_mean_Ns, aes(x = factor(ns), y = means)) +
-        geom_violin(fill = "lightsteelblue") +
-        geom_hline(yintercept = mean(form_dat$area, na.rm=TRUE),
-                   color = "red") +
-        labs(x = "Sample Size",
-             y = "Mean area",
-             title = "Formal") +
-        theme_hc()
-bplt <- ggplot(data = inform_mean_Ns, aes(x = factor(ns), y = means)) +
-        geom_violin(fill = "lightsteelblue") +
-        geom_hline(yintercept = mean(inform_dat$area, na.rm=TRUE),
-                   color = "red") +
-        labs(x = "Sample Size",
-             y = "",
-             title = "Informal") +
-        theme_hc()
-multiplot(aplt, bplt, cols = 2)
-
-###########################################################################
-# Let's look for some other differences, if any
-check_area_disturbed <- function(dat) {
-    fdat <- dat[dat$formal_in == "formal", ]
-    idat <- dat[dat$formal_in == "informal", ]
-    formal_area_mean <- mean(fdat$area, na.rm = T)
-    informal_area_mean <- mean(idat$area, na.rm = T)
-    formal_area_median <- median(fdat$area, na.rm = T)
-    informal_area_median <- median(idat$area, na.rm = T)
-    formal_area_sd <- sd(fdat$area, na.rm = T)
-    informal_area_sd <- sd(idat$area, na.rm = T)
-    formal_area_n <- sum(!is.na(fdat$area))
-    informal_area_n <- sum(!is.na(idat$area))
-    formal_area_se <- formal_area_sd / sqrt(formal_area_n)
-    informal_area_se <- informal_area_sd / sqrt(informal_area_n)
-    formal_start_date_mean <- mean(fdat$start_date, na.rm = T)
-    informal_start_date_mean <- mean(idat$start_date, na.rm = T)
-    formal_start_date_sd <- sd(fdat$start_date, na.rm = T)
-    informal_start_date_sd <- sd(idat$start_date, na.rm = T)
-
-    formal_FWS_concl_date_mean <- mean(fdat$FWS_concl_date, na.rm = T)
-    informal_FWS_concl_date_mean <- mean(idat$FWS_concl_date, na.rm = T)
-    formal_FWS_concl_date_sd <- sd(fdat$FWS_concl_date, na.rm = T)
-    informal_FWS_concl_date_sd <- sd(idat$FWS_concl_date, na.rm = T)
-    formal_lat_mean <- mean(fdat$lat_dec_deg.x, na.rm = T)
-    informal_lat_mean <- mean(idat$lat_dec_deg.x, na.rm = T)
-    formal_lat_sd <- sd(fdat$lat_dec_deg.x, na.rm = T)
-    informal_lat_sd <- sd(idat$lat_dec_deg.x, na.rm = T)
-    formal_long_mean <- mean(fdat$long_dec_deg.x, na.rm = T)
-    informal_long_mean <- mean(idat$long_dec_deg.x, na.rm = T)
-    formal_long_sd <- sd(fdat$long_dec_deg.x, na.rm = T)
-    informal_long_sd <- sd(idat$long_dec_deg.x, na.rm = T)
-
-    variable <- c("area", "area", "area", "area", "area",
-                  "start date", "end date",
-                  "latitude", "latitude",
-                  "longitude", "longitude")
-    stat <- c("mean", "sd", "median", "n", "se",
-              "mean", "mean", rep(c("mean", "sd"), 2))
-    print(stat)
-    formal <- c(prettyNum(formal_area_mean, digits = 3),
-                prettyNum(formal_area_sd, digits = 3),
-                prettyNum(formal_area_median, digits = 3),
-                prettyNum(formal_area_n, digits = 3),
-                prettyNum(formal_area_se, digits = 3),
-                format(formal_start_date_mean, format = "%d %b %Y"),
-                format(formal_FWS_concl_date_mean, format = "%d %b %Y"),
-                prettyNum(formal_lat_mean, digits = 3),
-                prettyNum(formal_lat_sd, digits = 3),
-                prettyNum(formal_long_mean, digits = 3),
-                prettyNum(formal_long_sd, digits = 3))
-
-    informal <- c(prettyNum(informal_area_mean, digits = 3),
-                  prettyNum(informal_area_sd, digits = 3),
-                  prettyNum(informal_area_median, digits = 3),
-                  prettyNum(informal_area_n, digits = 3),
-                  prettyNum(informal_area_se, digits = 3),
-                  format(informal_start_date_mean, format = "%d %b %Y"),
-                  format(informal_FWS_concl_date_mean, format = "%d %b %Y"),
-                  prettyNum(informal_lat_mean, digits = 3),
-                  prettyNum(informal_lat_sd, digits = 3),
-                  prettyNum(informal_long_mean, digits = 3),
-                  prettyNum(informal_long_sd, digits = 3))
-
-    result <- data.frame(variable, stat, formal, informal)
-    result
-}
-
-summary_stats <- check_area_disturbed(combo_dat)
-summary_stats
-
-amod1 <- lm(log(combo_dat$area + 0.01) ~ combo_dat$formal_in)
-summary(amod1)
-hist(resid(amod1))
-
-amod2 <- lm(combo_dat$area ~ combo_dat$long_dec_deg.x)
-summary(amod2)
-
-ggplot(combo_dat, aes(area, fill = formal_in, colour = formal_in)) +
-    geom_density(alpha = 0.3) +
-    theme_hc()
-
-
-###############################################################################
-# Estimate total area
-
-bootstrap_total_area <- function(dat, B = 1000, N) {
-    areas <- dat[!is.na(dat$area) & (dat$hab_chg == 2 |
-                                     dat$hab_chg == 3 |
-                                     dat$hab_chg == 4), ]$area
-    samp_reps <- rep(NA, B)
-    for (i in 1:B) {
-        samp_reps[i] <- sum(sample(areas, replace = TRUE, size = N), na.rm=TRUE)
-    }
-    samp_df <- data.frame(samp_reps)
-
-    plt <- ggplot(samp_df, aes(samp_reps)) +
-               geom_histogram(colour = "white") +
-               labs(x = "Sum of sampled areas (acres)",
-                    y = "Frequency") +
-               theme_hc()
-    print(plt)
-
-    print(mean(samp_reps))
-    print(quantile(probs = c(0.025, 0.975), samp_reps, na.rm = TRUE))
-    return(samp_df)
-}
-
-form_boot <- bootstrap_total_area(form_dat, B=10000, N=6829)
-inform_boot <- bootstrap_total_area(inform_dat, B=10000, N=81461)
-
-bootstrap_forest_area <- function(dat, B = 1000, N) {
-    areas <- dat[!is.na(dat$area) & dat$work_category == "forestry"
-                 & (dat$hab_chg == 2 |
-                    dat$hab_chg == 3 |
-                    dat$hab_chg == 4), ]$area
-    samp_reps <- rep(NA, B)
-    for (i in 1:B) {
-        samp_reps[i] <- sum(sample(areas, replace = TRUE, size = N))
-    }
-    samp_df <- data.frame(samp_reps)
-
-    plt <- ggplot(samp_df, aes(samp_reps)) +
-               geom_histogram(colour = "white") +
-               labs(x = "Sum of sampled areas (ha)",
-                    y = "Frequency") +
-               theme_hc()
-    print(plt)
-
-    print(mean(samp_reps))
-    print(quantile(probs = c(0.025, 0.975), samp_reps))
-    return(samp_df)
-}
-
-form_boot <- bootstrap_forest_area(form_dat, B=10000, N=361)
-inform_boot <- bootstrap_total_area(inform_dat, B=10000, N=81461)
-
-
-boots <- data.frame(formal = form_boot$samp_reps, informal = inform_boot$samp_reps)
-head(boots)
-boots$total <- boots$form + boots$inform
-boots$total_ha <- boots$total * 0.404686
-
-boot2 <- boots[,1:2] %>% gather()
-names(boot2) <- c("type", "area")
-
-plt <- ggplot(boot2, aes(area, fill = type)) +
-           geom_histogram(bins = 100) +
-           labs(x = "\nSum of sampled areas (acres)",
-                y = "Frequency\n") +
-           scale_fill_viridis(discrete = TRUE,
-                              guide = guide_legend(title = "Consult. type")) +
-           theme_hc() +
-           theme(legend.position = "right",
-                 legend.title = element_text(size = 8),
-                 legend.text = element_text(size = 8))
-print(plt)
-
-## Am going to need to figure out how to weight the samples by prob coords.
-mod1 <- lm(area ~ ESOffice.x, data = form_dat)
-summary(mod1)
-hist(resid(mod1))
-
-mod2 <- lm(area ~ ESOffice.x, data = inform_dat)
-summary(mod2)
-hist(resid(mod2))
-anova(mod2)
-
-## Turns out, no. There is no significant relationship, so I don't think more
-## complex sampling is warranted.
-
-
-mod1 <- lm(area ~ work_category, data = form_dat)
-summary(mod1)
-hist(resid(mod1))
-
-mod2 <- lm(area ~ work_category, data = inform_dat)
-summary(mod2)
-hist(resid(mod2))
-
-ggplot(data = form_dat, aes(x = factor(work_category), y = area)) +
-    geom_boxplot() +
-    labs(x = "", y = "Area (ha)") +
-    theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
-    theme_hc()
-
-ggplot(data = inform_dat, aes(x = factor(work_category), y = area)) +
-    geom_boxplot() +
-    labs(x = "", y = "Area (ha)") +
-    theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
-    theme_hc()
+```
 

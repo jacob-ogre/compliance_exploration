@@ -4,6 +4,10 @@ p, li {
   font-weight: 300;
 }
 
+blockquote {
+  font-size: 1em;
+}
+
 h1 {
   font-size: 36px;
   font-family: "Garamond";
@@ -36,9 +40,10 @@ code {
 
 .tocify {
   border-radius: 2px;
-  font-size: large;
+  font-size: 1.1em;
   font-family: "Garamond";
-  font-weight: 500;
+  font-weight: 600;
+  padding-left: 2px;
 }
 
 .list-group-item.active,
@@ -46,6 +51,15 @@ code {
 .list-group-item.active:hover {
   background-color: #0E3670;
   border-color: #0E3670;
+}
+
+.tocify .tocify-item a,
+.tocify .list-group-item {
+  padding-left: 1px;
+}
+
+.tocify-header {
+  text-indent: 2px;
 }
 
 .header-panel {
@@ -95,4 +109,9 @@ a {
 .mytitle {
   font-size: 22pt;
   font-weight: 600;
+}
+
+
+.leaflet .html-widget .html-widget-static-bound .leaflet-container .leaflet-fade-anim {
+  border: 1px solid black;
 }

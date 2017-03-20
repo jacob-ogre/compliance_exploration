@@ -66,6 +66,24 @@ form_dat$formal_in <- rep("formal", length(form_dat$activity_code))
 inform_dat$formal_in <- rep("informal", length(inform_dat$activity_code))
 combo_dat <- rbind(form_dat, inform_dat)
 
-write_tsv(combo_dat, "data/merged_formal_informal_data.tsv")
-saveRDS(combo_dat, "data/merged_formal_informal_data.rds")
+combo_dat$earliest_date <- as.Date(combo_dat$earliest_date)
 
+combo_dat$observed <- ifelse(
+  combo_dat$action_found == 0,
+  "No",
+  ifelse(
+    combo_dat$action_found == 0.5,
+    "Maybe",
+    "Yes"
+  )
+)
+
+write_tsv(combo_dat, "inst/extdata/merged_formal_informal.tsv")
+saveRDS(combo_dat, "inst/extdata/merged_formal_informal.rds")
+
+## Now for the underlying consult data
+
+form_cons <- read_tsv("data-raw/random_sample_formal_consults_w_decdeg.tab")
+inform_cons <- read_tsv("data-raw/random_sample_informal_consults_w_decdeg.tab")
+saveRDS(form_cons, "inst/extdata/formal_consult_random.rds")
+saveRDS(inform_cons, "inst/extdata/informal_consult_random.rds")
