@@ -1,6 +1,6 @@
 ---
-title: "ESA compliance with remotely sensed data"
-author: "Tiffany Kim, Ya-Wei Li, and Jacob Malcom"
+title: "DRAFT: ESA compliance with remotely sensed data"
+author: "Tiffany Kim, Ya-Wei Li, and Jacob Malcom; Defenders of Wildlife"
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_document:
@@ -369,24 +369,26 @@ make_scatter_df <- function(dat, cons_dat, formal_in) {
 }
 form_obs_dat <- make_scatter_df(formal, form_cons, "formal")
 
-plot_ly(data = form_obs_dat,
-        type = "scatter",
-        mode = "markers",
-        y = form_obs_dat$type_count,
-        x = round(form_obs_dat$type_mean, 2),
-        text = paste("Work type:", 
-                     form_obs_dat$work, 
-                     "<br>Work category:", 
-                     form_obs_dat$cat),
-        marker = list(
-          color = substr(
-            viridis(n = length(unique(form_obs_dat$cat))), 0, 7
-          ),
-          opacity = 0.6,
-          size = 20)
-        ) %>%
-layout(yaxis = list(title = "# actions"),
-       xaxis = list(title = "Prop. observed"))
+tags$div(
+  plot_ly(data = form_obs_dat,
+          type = "scatter",
+          mode = "markers",
+          y = form_obs_dat$type_count,
+          x = round(form_obs_dat$type_mean, 2),
+          text = paste("Work type:", 
+                       form_obs_dat$work, 
+                       "<br>Work category:", 
+                       form_obs_dat$cat),
+          marker = list(
+            color = substr(
+              viridis(n = length(unique(form_obs_dat$cat))), 0, 7
+            ),
+            opacity = 0.6,
+            size = 20)
+          ) %>%
+  layout(yaxis = list(title = "# actions"),
+         xaxis = list(title = "Prop. observed"))
+)
 
 tags$br()
 tags$br()
@@ -399,24 +401,27 @@ inform_obs_dat <- suppressWarnings(
   make_scatter_df(informal, inform_cons, "informal")
 )
 
-plot_ly(data = inform_obs_dat,
-        type = "scatter",
-        mode = "markers",
-        y = inform_obs_dat$type_count,
-        x = round(inform_obs_dat$type_mean, 2),
-        text = paste("Work type:", 
-                     inform_obs_dat$work, 
-                     "<br>Work category:", 
-                     inform_obs_dat$cat),
-        marker = list(
-          color = substr(
-            viridis(n = length(unique(inform_obs_dat$cat))), 0, 7
-          ),
-          opacity = 0.6,
-          size = 20)
-        ) %>%
-layout(yaxis = list(title = "# actions"),
-       xaxis = list(title = "Prop. observed"))
+tags$div(
+  plot_ly(data = inform_obs_dat,
+          type = "scatter",
+          mode = "markers",
+          y = inform_obs_dat$type_count,
+          x = round(inform_obs_dat$type_mean, 2),
+          text = paste("Work type:", 
+                       inform_obs_dat$work, 
+                       "<br>Work category:", 
+                       inform_obs_dat$cat),
+          marker = list(
+            color = substr(
+              viridis(n = length(unique(inform_obs_dat$cat))), 0, 7
+            ),
+            opacity = 0.6,
+            size = 20)
+          ) %>%
+  layout(yaxis = list(title = "# actions"),
+         xaxis = list(title = "Prop. observed"))
+)
+
 ```
 
 ## Types of Change
