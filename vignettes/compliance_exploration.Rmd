@@ -30,6 +30,7 @@ for more information.
 ```{r setup, include=FALSE}
 library(dplyr)
 library(ggalt)
+library(ggmap)
 library(ggplot2)
 library(ggrepel)
 library(ggthemes)
@@ -60,6 +61,9 @@ inform_rand <- system.file("extdata", "informal_consult_random.rds",
 form_cons <- readRDS(form_rand)
 inform_cons <- readRDS(inform_rand)
 
+all_s7 <- system.file("extdata", "s7_data.rds",
+                      package = "compliance.exploration")
+s7_all <- readRDS(all_s7)
 ```
 
 ## Data Summary
@@ -99,8 +103,8 @@ Washington (n ~ 500 formal consultations, high data recording rate).
 # to_map <- dplyr::filter(dat, dat$lat_dec_deg.x > 20 & dat$lat_dec_deg.x < 60)
 # map <- qmplot(
 #     data = to_map,
-#     x = long_dec_deg.x, 
-#     y = lat_dec_deg.x, 
+#     x = long_dec_deg.x,
+#     y = lat_dec_deg.x,
 #     maptype = "toner-lite",
 #     color = formal_in,
 #     size = I(2),
@@ -145,7 +149,7 @@ tags$div(
 __Top lead agencies__
 
 ```{r agency} 
-head(sort(table(as.character(dat$lead_agency)), decreasing = TRUE), 10)
+as_data_frame(head(sort(table(as.character(dat$lead_agency)), decreasing = TRUE), 10))
 ```
 
 __Top 10 lead ES offices__
