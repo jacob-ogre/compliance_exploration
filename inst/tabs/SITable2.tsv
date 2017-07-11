@@ -1,0 +1,38 @@
+"category"	"in/formal"	"observability"
+"agriculture"	"formal"	0.142857142857143
+"bridge"	"formal"	0.384615384615385
+"bridge construction / maintenance"	"formal"	0.285714285714286
+"development"	"formal"	0.532258064516129
+"dredge / excavation"	"formal"	0.5
+"federal grant / loan related"	"formal"	0
+"fire"	"formal"	0.5
+"forestry"	"formal"	0.821428571428571
+"land"	"formal"	0
+"levee / dike"	"formal"	0
+"levees / dikes"	"formal"	0
+"military"	"formal"	0
+"military operations / maneuvers"	"formal"	0.25
+"oil or gas"	"formal"	0
+"private dock / pier"	"formal"	1
+"recovery permit"	"formal"	0
+"shoreline / beach protection / renourishment"	"formal"	0.333333333333333
+"stream / waterbody"	"formal"	0.4
+"stream restoration / enhancement"	"formal"	0.111111111111111
+"transportation"	"formal"	0.393617021276596
+"bridge"	"informal"	0.351851851851852
+"communications tower"	"informal"	0.3125
+"development"	"informal"	0.567796610169492
+"dredge / excavation"	"informal"	0
+"federal grant / loan related"	"informal"	0.333333333333333
+"fire"	"informal"	0
+"mining"	"informal"	0
+"oil or gas"	"informal"	0
+"oil or gas exploration / production"	"informal"	0.571428571428571
+"oil or gas pipeline"	"informal"	0.227272727272727
+"private dock / pier"	"informal"	0.416666666666667
+"shoreline usage facilities / development"	"informal"	1
+"special use permit"	"informal"	0.125
+"stream / waterbody"	"informal"	0.222222222222222
+"transportation"	"informal"	0.391304347826087
+"wastewater facility"	"informal"	0.5
+"water supply pipeline"	"informal"	0

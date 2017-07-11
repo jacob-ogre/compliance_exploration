@@ -239,7 +239,7 @@ new
 Determining the types of work that are most amenable to monitoring from the
 standpoint of observability - whether the effects of the action are observable 
 in aerial or satellite imagery - is a key challenge. Before showing 
-observability rate, we the sample size by work type and by formal/informal 
+observability rate, here is the sample size by work type and by formal/informal 
 consultation:
 
 ```{r tmp}
@@ -340,7 +340,11 @@ There is a long tail of work categories with few consultations.
 
 ### ...but work type matters a lot
 
-Formal consultations:
+The "lollipops" indicate the number of consultations we expect to find for each
+work category given the observability of work types and their frequency in 
+consultations. The gray circles are the number of actions of one or more work
+_types_ per work _category_, and the red vertical lines are the mean number 
+of actions we expect to find for each work type within work category:
 
 ```{r availables, warning=FALSE, error=FALSE, message=FALSE}
 make_scatter_df <- function(dat, cons_dat, formal_in) {
@@ -372,59 +376,118 @@ make_scatter_df <- function(dat, cons_dat, formal_in) {
   return(tmp_dat)
 }
 form_obs_dat <- make_scatter_df(formal, form_cons, "formal")
+form_obs_dat$expected <- form_obs_dat$type_count * form_obs_dat$type_mean
+cat_max <- aggregate(expected ~ cat, 
+                     data = form_obs_dat, 
+                     FUN = max, na.rm = TRUE)
+names(cat_max)[2] <- "cat_max"
+cat_mean <- aggregate(expected ~ cat, 
+                     data = form_obs_dat, 
+                     FUN = mean, na.rm = TRUE)
+names(cat_mean)[2] <- "cat_mean"
+cat_sum <- aggregate(expected ~ cat, 
+                     data = form_obs_dat, 
+                     FUN = sum, na.rm = TRUE)
+names(cat_sum)[2] <- "cat_sum"
+form_obs_dat <- left_join(form_obs_dat, cat_max, by = "cat")
+form_obs_dat <- left_join(form_obs_dat, cat_mean, by = "cat")
+form_obs_dat <- left_join(form_obs_dat, cat_sum, by = "cat")
+form_obs_dat$cat_ord <- reorder(form_obs_dat$cat, form_obs_dat$cat_sum)
+form_obs_dat$in_formal <- "Formal"
 
-tags$div(
-  plot_ly(data = form_obs_dat,
-          type = "scatter",
-          mode = "markers",
-          y = form_obs_dat$type_count,
-          x = round(form_obs_dat$type_mean, 2),
-          text = paste("Work type:", 
-                       form_obs_dat$work, 
-                       "<br>Work category:", 
-                       form_obs_dat$cat),
-          marker = list(
-            color = substr(
-              viridis(n = length(unique(form_obs_dat$cat))), 0, 7
-            ),
-            opacity = 0.6,
-            size = 20)
-          ) %>%
-  layout(yaxis = list(title = "# actions"),
-         xaxis = list(title = "Prop. observed"))
-)
-
-tags$br()
-tags$br()
+########################
+# The following includes code for the scatterplot of number of actions
+# vs. observability. It is superceded by a lollipop chart in the informal
+# consultation section below...
+#
+# tags$div(
+#   plot_ly(data = form_obs_dat,
+#           type = "scatter",
+#           mode = "markers",
+#           y = form_obs_dat$type_count,
+#           x = round(form_obs_dat$type_mean, 2),
+#           text = paste("Work type:", 
+#                        form_obs_dat$work, 
+#                        "<br>Work category:", 
+#                        form_obs_dat$cat),
+#           marker = list(
+#             color = substr(
+#               viridis(n = length(unique(form_obs_dat$cat))), 0, 7
+#             ),
+#             opacity = 0.6,
+#             size = 20)
+#           ) %>%
+#   layout(yaxis = list(title = "# actions"),
+#          xaxis = list(title = "Prop. observed"))
+# )
 ```
-
-Informal consultations:
 
 ```{r informal_consult_exp_type, warn=FALSE, error=FALSE, message=FALSE}
 inform_obs_dat <- suppressWarnings(
   make_scatter_df(informal, inform_cons, "informal")
 )
 
-tags$div(
-  plot_ly(data = inform_obs_dat,
-          type = "scatter",
-          mode = "markers",
-          y = inform_obs_dat$type_count,
-          x = round(inform_obs_dat$type_mean, 2),
-          text = paste("Work type:", 
-                       inform_obs_dat$work, 
-                       "<br>Work category:", 
-                       inform_obs_dat$cat),
-          marker = list(
-            color = substr(
-              viridis(n = length(unique(inform_obs_dat$cat))), 0, 7
-            ),
-            opacity = 0.6,
-            size = 20)
-          ) %>%
-  layout(yaxis = list(title = "# actions"),
-         xaxis = list(title = "Prop. observed"))
-)
+inform_obs_dat$expected <- inform_obs_dat$type_count * inform_obs_dat$type_mean
+cat_max <- aggregate(expected ~ cat, 
+                     data = inform_obs_dat, 
+                     FUN = max, na.rm = TRUE)
+names(cat_max)[2] <- "cat_max"
+cat_mean <- aggregate(expected ~ cat, 
+                     data = inform_obs_dat, 
+                     FUN = mean, na.rm = TRUE)
+names(cat_mean)[2] <- "cat_mean"
+cat_sum <- aggregate(expected ~ cat, 
+                     data = inform_obs_dat, 
+                     FUN = sum, na.rm = TRUE)
+names(cat_sum)[2] <- "cat_sum"
+inform_obs_dat <- left_join(inform_obs_dat, cat_max, by = "cat")
+inform_obs_dat <- left_join(inform_obs_dat, cat_mean, by = "cat")
+inform_obs_dat <- left_join(inform_obs_dat, cat_sum, by = "cat")
+inform_obs_dat$cat_ord <- reorder(inform_obs_dat$cat, inform_obs_dat$cat_sum)
+inform_obs_dat$in_formal <- "Informal"
+
+allocation <- rbind(form_obs_dat, inform_obs_dat)
+cat_mean_rate <- aggregate(type_mean ~ cat, 
+                     data = allocation, 
+                     FUN = mean, na.rm = TRUE)
+names(cat_mean_rate)[2] <- "cat_mean_rate"
+allocation <- left_join(allocation, cat_mean_rate, by = "cat")
+allocation$combo_ord <- reorder(allocation$cat, allocation$cat_sum)
+
+marg <- ggplot(allocation, aes(x = cat_sum, y = combo_ord)) +
+  geom_lollipop(horizontal = TRUE, point.size = 3) +
+  geom_jitter(aes(x = type_count, y = combo_ord), 
+             size = 3,
+             alpha = 0.2, height = 0.1, width = 0) +
+  geom_point(aes(x = cat_mean, y = combo_ord), 
+             shape = "|", 
+             size = 4,
+             colour = "red") +
+  facet_grid(. ~ in_formal, scales = "free") +
+  labs(x = "No. Actions", y = NULL) +
+  theme_hc()
+marg
+
+# tags$div(
+#   plot_ly(data = inform_obs_dat,
+#           type = "scatter",
+#           mode = "markers",
+#           y = inform_obs_dat$type_count,
+#           x = round(inform_obs_dat$type_mean, 2),
+#           text = paste("Work type:", 
+#                        inform_obs_dat$work, 
+#                        "<br>Work category:", 
+#                        inform_obs_dat$cat),
+#           marker = list(
+#             color = substr(
+#               viridis(n = length(unique(inform_obs_dat$cat))), 0, 7
+#             ),
+#             opacity = 0.6,
+#             size = 20)
+#           ) %>%
+#   layout(yaxis = list(title = "# actions"),
+#          xaxis = list(title = "Prop. observed"))
+# )
 
 ```
 
